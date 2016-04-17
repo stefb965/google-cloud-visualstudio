@@ -65,6 +65,12 @@
     <Compile Include="CloudExplorerSources\Gcs\BucketViewModel.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSource.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSourceRootViewModel.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\SubscriptionViewModel.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\SubscriptionItem.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\TopicItem.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\TopicViewModel.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\PubSubSourceRootViewModel.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\PubSubSource.cs" />
     <Compile Include="CloudExplorer\CloudExplorerSourceException.cs" />
     <Compile Include="CloudExplorer\SourceRootViewModelBase.cs" />
     <Compile Include="CloudExplorer\ButtonDefinition.cs" />
@@ -145,6 +151,8 @@
     <Resource Include="CloudExplorerSources\Gce\Resources\instance_icon_running.png" />
     <Resource Include="CloudExplorerSources\Gce\Resources\instance_icon_stoped.png" />
     <Resource Include="CloudExplorerSources\Gce\Resources\instance_icon_transition.png" />
+    <Resource Include="CloudExplorerSources\PubSub\Resources\item_icon.png" />
+    <Resource Include="CloudExplorerSources\PubSub\Resources\pubsub.png" />
     <Content Include="License.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>

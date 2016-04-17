@@ -52,6 +52,12 @@
   <ItemGroup>
     <Compile Include="ApiHelpers.cs" />
     <Compile Include="DataSourceException.cs" />
+    <Compile Include="Models\PubSubSubscription.cs" />
+    <Compile Include="Models\PubSubSubscriptionPage.cs" />
+    <Compile Include="Models\PubSubPushConfig.cs" />
+    <Compile Include="Models\PubSubTopicPage.cs" />
+    <Compile Include="Models\PubSubTopic.cs" />
+    <Compile Include="PubSubDataSource.cs" />
     <Compile Include="GceDataSource.cs" />
     <Compile Include="GceInstanceExtensions.cs" />
     <Compile Include="GceMetadataExtensions.cs" />

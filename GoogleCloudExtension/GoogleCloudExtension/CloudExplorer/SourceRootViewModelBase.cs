@@ -39,7 +39,7 @@ namespace GoogleCloudExtension.CloudExplorer
 
         public ICloudExplorerSource Owner { get; private set; }
 
-        public void Initialize(ICloudExplorerSource owner)
+        public virtual void Initialize(ICloudExplorerSource owner)
         {
             Icon = RootIcon;
             Content = RootCaption;
