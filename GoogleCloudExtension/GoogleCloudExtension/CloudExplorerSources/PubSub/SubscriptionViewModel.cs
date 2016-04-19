@@ -24,6 +24,8 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         private readonly Lazy<SubscriptionItem> _item;
 
         public object Item => _item.Value;
+        public SubscriptionItem SubscriptionItem => _item.Value;
+
         public event EventHandler ItemChanged;
 
         public SubscriptionViewModel(PubSubSourceRootViewModel owner, PubSubSubscription subscription)
@@ -59,13 +61,12 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private async void OnDeleteSubscription()
         {
-            if (UserPromptUtils.YesNoPrompt($"Do you want to delete the subscription \"{_item.Value.FullName}\"?",
-                "Confirm"))
-            {
-                var oauthToken = await AccountsManager.GetAccessTokenAsync();
-                await PubSubDataSource.DeleteSubscriptionAsync(_item.Value.FullName, oauthToken);
-                _owner.Owner.Refresh();
-            }
+            if (!UserPromptUtils.YesNoPrompt($"Do you want to delete the subscription \"{_item.Value.FullName}\"?",
+                "Confirm")) return;
+
+            var oauthToken = await AccountsManager.GetAccessTokenAsync();
+            await PubSubDataSource.DeleteSubscriptionAsync(_item.Value.FullName, oauthToken);
+            _owner.Owner.Refresh();
         }
     }
 }

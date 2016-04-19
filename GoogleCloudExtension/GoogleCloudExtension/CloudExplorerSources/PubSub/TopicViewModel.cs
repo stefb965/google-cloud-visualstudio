@@ -22,8 +22,11 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private readonly PubSubSourceRootViewModel _owner;
         private readonly Lazy<TopicItem> _item;
+        private readonly List<SubscriptionViewModel> _subscriptions;
 
         public object Item => _item.Value;
+        public TopicItem TopicItem => _item.Value;
+
         public event EventHandler ItemChanged;
 
         public TopicViewModel(PubSubSourceRootViewModel owner, PubSubTopic topic, IEnumerable<PubSubSubscription> subscriptions)
@@ -34,9 +37,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             Content = _item.Value.Name;
             Icon = s_topicIcon.Value;
 
-            var viewModels = subscriptions.Select(x => new SubscriptionViewModel(owner, x));
+            _subscriptions = subscriptions.Select(x => new SubscriptionViewModel(owner, x)).ToList();
 
-            foreach (var viewModel in viewModels)
+            foreach (var viewModel in _subscriptions)
             {
                 Children.Add(viewModel);
             }
@@ -64,13 +67,18 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private async void OnDeleteTopic()
         {
-            if (UserPromptUtils.YesNoPrompt($"Do you want to delete the topic \"{_item.Value.FullName}\"?",
-                "Confirm"))
+            if (!UserPromptUtils.YesNoPrompt($"Do you want to delete the topic \"{_item.Value.FullName}\"?",
+                "Confirm")) return;
+
+            var oauthToken = await AccountsManager.GetAccessTokenAsync();
+
+            foreach (var subscription in _subscriptions)
             {
-                var oauthToken = await AccountsManager.GetAccessTokenAsync();
-                await PubSubDataSource.DeleteTopicAsync(_item.Value.FullName, oauthToken);
-                _owner.Owner.Refresh();
+                await PubSubDataSource.DeleteSubscriptionAsync(subscription.SubscriptionItem.FullName, oauthToken);
             }
+
+            await PubSubDataSource.DeleteTopicAsync(_item.Value.FullName, oauthToken);
+            _owner.Owner.Refresh();
         }
     }
 }
