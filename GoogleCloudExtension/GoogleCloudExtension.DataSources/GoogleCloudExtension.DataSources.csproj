@@ -52,6 +52,9 @@
   <ItemGroup>
     <Compile Include="ApiHelpers.cs" />
     <Compile Include="DataSourceException.cs" />
+    <Compile Include="ExtendedWebClient.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Models\PubSubSubscription.cs" />
     <Compile Include="Models\PubSubSubscriptionPage.cs" />
     <Compile Include="Models\PubSubPushConfig.cs" />

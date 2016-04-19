@@ -3,8 +3,11 @@
 
 using GoogleCloudExtension.DataSources.Models;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace GoogleCloudExtension.DataSources
 {
@@ -22,14 +25,14 @@ namespace GoogleCloudExtension.DataSources
         /// <returns>The list of topics.</returns>
         public static Task<IList<PubSubTopic>> GetTopicListAsync(string projectId, string oauthToken)
         {
-            var baseUrl = $"https://pubsub.googleapis.com/v1/projects/{projectId}/topics";
+            var url = $"https://pubsub.googleapis.com/v1/projects/{projectId}/topics";
             var client = new WebClient().SetOauthToken(oauthToken);
 
             return ApiHelpers.LoadPagedListAsync<PubSubTopic, PubSubTopicPage>(
                 client,
-                baseUrl,
+                url,
                 x => x.Topics,
-                x => string.IsNullOrEmpty(x.NextPageToken) ? null : $"{baseUrl}&pageToken={x.NextPageToken}");
+                x => string.IsNullOrEmpty(x.NextPageToken) ? null : $"{url}&pageToken={x.NextPageToken}");
         }
 
         /// <summary>
@@ -40,14 +43,60 @@ namespace GoogleCloudExtension.DataSources
         /// <returns>The list of subscriptions.</returns>
         public static Task<IList<PubSubSubscription>> GetSubscriptionListAsync(string projectId, string oauthToken)
         {
-            var baseUrl = $"https://pubsub.googleapis.com/v1/projects/{projectId}/subscriptions";
+            var url = $"https://pubsub.googleapis.com/v1/projects/{projectId}/subscriptions";
             var client = new WebClient().SetOauthToken(oauthToken);
 
             return ApiHelpers.LoadPagedListAsync<PubSubSubscription, PubSubSubscriptionPage>(
                 client,
-                baseUrl,
+                url,
                 x => x.Subscriptions,
-                x => string.IsNullOrEmpty(x.NextPageToken) ? null : $"{baseUrl}&pageToken={x.NextPageToken}");
+                x => string.IsNullOrEmpty(x.NextPageToken) ? null : $"{url}&pageToken={x.NextPageToken}");
+        }
+
+        /// <summary>
+        /// Deletes given topic.
+        /// </summary>
+        /// <param name="topicId">The id of the topic to be deleted.</param>
+        /// <param name="oauthToken">The oauth token to use to authorize the call.</param>
+        public static async Task DeleteTopicAsync(string topicId, string oauthToken)
+        {
+            var url = $"https://pubsub.googleapis.com/v1/{topicId}";
+            var client = new ExtendedWebClient();
+            client.SetOauthToken(oauthToken);
+            client.HttpMethod = "DELETE";
+
+            try
+            {
+                var response = await client.DownloadStringTaskAsync(url);
+            }
+            catch (WebException ex)
+            {
+                Debug.WriteLine($"Request failed: {ex.Message}");
+                throw new DataSourceException(ex.Message, ex);
+            }
+        }
+
+        /// <summary>
+        /// Deletes given subscription.
+        /// </summary>
+        /// <param name="subscriptionId">The id of the subscription to be deleted.</param>
+        /// <param name="oauthToken">The oauth token to use to authorize the call.</param>
+        public static async Task DeleteSubscriptionAsync(string subscriptionId, string oauthToken)
+        {
+            var url = $"https://pubsub.googleapis.com/v1/{subscriptionId}";
+            var client = new ExtendedWebClient();
+            client.SetOauthToken(oauthToken);
+            client.HttpMethod = "DELETE";
+               
+            try
+            {
+                var response = await client.DownloadStringTaskAsync(url);
+            }
+            catch (WebException ex)
+            {
+                Debug.WriteLine($"Request failed: {ex.Message}");
+                throw new DataSourceException(ex.Message, ex);
+            }
         }
     }
 }

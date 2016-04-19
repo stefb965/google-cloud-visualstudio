@@ -7,7 +7,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.CloudExplorer;
+using GoogleCloudExtension.DataSources;
 using GoogleCloudExtension.DataSources.Models;
 using GoogleCloudExtension.Utils;
 
@@ -60,9 +62,15 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             MessageBox.Show("Not implemented yet", "Error", MessageBoxButton.OK);
         }
 
-        private void OnDeleteTopic()
+        private async void OnDeleteTopic()
         {
-            MessageBox.Show("Not implemented yet", "Error", MessageBoxButton.OK);
+            if (UserPromptUtils.YesNoPrompt($"Do you want to delete the topic \"{_item.Value.FullName}\"?",
+                "Confirm"))
+            {
+                var oauthToken = await AccountsManager.GetAccessTokenAsync();
+                await PubSubDataSource.DeleteTopicAsync(_item.Value.FullName, oauthToken);
+                _owner.Owner.Refresh();
+            }
         }
     }
 }

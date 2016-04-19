@@ -7,7 +7,9 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.CloudExplorer;
+using GoogleCloudExtension.DataSources;
 using GoogleCloudExtension.DataSources.Models;
 using GoogleCloudExtension.Utils;
 
@@ -55,9 +57,15 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             Process.Start(url);
         }
 
-        private void OnDeleteSubscription()
+        private async void OnDeleteSubscription()
         {
-            MessageBox.Show("Not implemented yet", "Error", MessageBoxButton.OK);
+            if (UserPromptUtils.YesNoPrompt($"Do you want to delete the subscription \"{_item.Value.FullName}\"?",
+                "Confirm"))
+            {
+                var oauthToken = await AccountsManager.GetAccessTokenAsync();
+                await PubSubDataSource.DeleteSubscriptionAsync(_item.Value.FullName, oauthToken);
+                _owner.Owner.Refresh();
+            }
         }
     }
 }
