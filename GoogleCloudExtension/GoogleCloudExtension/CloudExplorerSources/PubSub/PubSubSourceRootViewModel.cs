@@ -70,7 +70,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnBrowseTopics()
         {
-            var url = $"https://pantheon.corp.google.com/cloudpubsub/topicList?project={Owner.CurrentProject.Id}";
+            var url = $"https://console.cloud.google.com/cloudpubsub/topicList?project={Owner.CurrentProject.Id}";
             Debug.WriteLine($"Starting topics browsing at: {url}");
             Process.Start(url);
         }

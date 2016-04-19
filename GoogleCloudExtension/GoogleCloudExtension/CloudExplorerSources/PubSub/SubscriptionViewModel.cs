@@ -50,7 +50,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnBrowseSubscription()
         {
-            var url = $"https://pantheon.corp.google.com/cloudpubsub/subscriptions/{_item.Value.Name}?edit=false&project={_owner.Owner.CurrentProject.Id}";
+            var url = $"https://console.cloud.google.com/cloudpubsub/subscriptions/{_item.Value.Name}?edit=false&project={_owner.Owner.CurrentProject.Id}";
             Debug.WriteLine($"Starting subscription browsing at: {url}");
             Process.Start(url);
         }
