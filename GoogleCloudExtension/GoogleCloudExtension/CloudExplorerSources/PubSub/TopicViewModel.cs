@@ -72,11 +72,15 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
             var oauthToken = await AccountsManager.GetAccessTokenAsync();
 
+            GcpOutputWindow.Activate();
+
             foreach (var subscription in _subscriptions)
             {
+                GcpOutputWindow.OutputLine($"Deleting \"{subscription.SubscriptionItem.FullName}\" subscription.");
                 await PubSubDataSource.DeleteSubscriptionAsync(subscription.SubscriptionItem.FullName, oauthToken);
             }
 
+            GcpOutputWindow.OutputLine($"Deleting \"{_item.Value.FullName}\" topic.");
             await PubSubDataSource.DeleteTopicAsync(_item.Value.FullName, oauthToken);
             _owner.Owner.Refresh();
         }

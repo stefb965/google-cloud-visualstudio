@@ -64,6 +64,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             if (!UserPromptUtils.YesNoPrompt($"Do you want to delete the subscription \"{_item.Value.FullName}\"?",
                 "Confirm")) return;
 
+            GcpOutputWindow.Activate();
+            GcpOutputWindow.OutputLine($"Deleting \"{_item.Value.FullName}\" subscription.");
+
             var oauthToken = await AccountsManager.GetAccessTokenAsync();
             await PubSubDataSource.DeleteSubscriptionAsync(_item.Value.FullName, oauthToken);
             _owner.Owner.Refresh();
