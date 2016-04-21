@@ -9,9 +9,13 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.CloudExplorer;
+using GoogleCloudExtension.CloudExplorerSources.PubSub.Dialogs;
+using GoogleCloudExtension.CloudExplorerSources.PubSub.ToolWindows;
 using GoogleCloudExtension.DataSources;
 using GoogleCloudExtension.DataSources.Models;
 using GoogleCloudExtension.Utils;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 {
@@ -57,12 +61,23 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnNewSubscription()
         {
-            MessageBox.Show("Not implemented yet", "Error", MessageBoxButton.OK);
+            var dlg = new CreateEditSubscriptionDialog();
+            dlg.ShowModal();
         }
 
+        private static int _pubWindowId = 0;
         private void OnPublish()
         {
-            MessageBox.Show("Not implemented yet", "Error", MessageBoxButton.OK);
+            _pubWindowId++;
+            var window = GoogleCloudExtensionPackage.Instance.FindToolWindow(typeof(PublishToolWindow), _pubWindowId, true);
+
+            if (window?.Frame == null)
+            {
+                throw new NotSupportedException("Cannot create tool window");
+            }
+
+            var windowFrame = (IVsWindowFrame)window.Frame;
+            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
         }
 
         private async void OnDeleteTopic()

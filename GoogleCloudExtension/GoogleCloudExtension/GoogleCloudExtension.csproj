@@ -65,8 +65,12 @@
     <Compile Include="CloudExplorerSources\Gcs\BucketViewModel.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSource.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSourceRootViewModel.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditSubscriptionDialog.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditTopicDialog.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionItem.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\ToolWindows\PullToolWindow.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\ToolWindows\PublishToolWindow.cs" />
     <Compile Include="CloudExplorerSources\PubSub\TopicItem.cs" />
     <Compile Include="CloudExplorerSources\PubSub\TopicViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\PubSubSourceRootViewModel.cs" />

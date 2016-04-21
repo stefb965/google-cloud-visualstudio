@@ -9,9 +9,12 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.CloudExplorer;
+using GoogleCloudExtension.CloudExplorerSources.PubSub.Dialogs;
+using GoogleCloudExtension.CloudExplorerSources.PubSub.ToolWindows;
 using GoogleCloudExtension.DataSources;
 using GoogleCloudExtension.DataSources.Models;
 using GoogleCloudExtension.Utils;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 {
@@ -40,6 +43,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             {
                 new MenuItem { Header = "Edit subscription", Command = new WeakCommand(OnEditSubscription) },
                 new MenuItem { Header = "Browse subscription", Command = new WeakCommand(OnBrowseSubscription) },
+                new MenuItem { Header = "Pull", Command = new WeakCommand(OnPullSubscription) },
                 new Separator(),
                 new MenuItem { Header = "Delete subscription", Command = new WeakCommand(OnDeleteSubscription) },
             };
@@ -49,7 +53,23 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnEditSubscription()
         {
-            MessageBox.Show("Not implemented yet", "Error", MessageBoxButton.OK);
+            var dlg = new CreateEditSubscriptionDialog();
+            dlg.ShowModal();
+        }
+
+        private static int _pulWindowId = 0;
+        public void OnPullSubscription()
+        {
+            _pulWindowId++;
+            var window = GoogleCloudExtensionPackage.Instance.FindToolWindow(typeof(PullToolWindow), _pulWindowId, true);
+
+            if (window?.Frame == null)
+            {
+                throw new NotSupportedException("Cannot create tool window");
+            }
+
+            var windowFrame = (IVsWindowFrame)window.Frame;
+            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
         }
 
         private void OnBrowseSubscription()

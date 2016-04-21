@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.CloudExplorer;
+using GoogleCloudExtension.CloudExplorerSources.PubSub.Dialogs;
 using GoogleCloudExtension.DataSources;
 using GoogleCloudExtension.DataSources.Models;
 using GoogleCloudExtension.Utils;
@@ -65,7 +66,8 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnCreateTopic()
         {
-            MessageBox.Show("Not implemented yet", "Error", MessageBoxButton.OK);
+            var dlg = new CreateEditTopicDialog();
+            dlg.ShowModal();
         }
 
         private void OnBrowseTopics()

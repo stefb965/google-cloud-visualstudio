@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using GoogleCloudExtension.CloudExplorerSources.PubSub.ToolWindows;
 
 namespace GoogleCloudExtension
 {
@@ -37,6 +38,8 @@ namespace GoogleCloudExtension
     [Guid(GoogleCloudExtensionPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     [ProvideToolWindow(typeof(CloudExplorerToolWindow))]
+    [ProvideToolWindow(typeof(PublishToolWindow), MultiInstances = true, Style = VsDockStyle.MDI)]
+    [ProvideToolWindow(typeof(PullToolWindow), MultiInstances = true, Style = VsDockStyle.MDI)]
     [ProvideAutoLoad(UIContextGuids80.NoSolution)]
     public sealed class GoogleCloudExtensionPackage : Package
     {
