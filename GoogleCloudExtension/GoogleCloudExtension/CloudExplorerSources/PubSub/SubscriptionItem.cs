@@ -4,7 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using GoogleCloudExtension.DataSources.Models;
+using Google.Apis.Pubsub.v1.Data;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 {
@@ -12,9 +12,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
     {
         private const string Category = "Subscription Properties";
 
-        private readonly PubSubSubscription _subscription;
+        private readonly Subscription _subscription;
 
-        public SubscriptionItem(PubSubSubscription subscription)
+        public SubscriptionItem(Subscription subscription)
         {
             _subscription = subscription;
             Name = subscription.Name.Split(new[] { "/" }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
@@ -35,6 +35,10 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         [Category(Category)]
         [Description("Delivery Type")]
         public string DeliveryType => !string.IsNullOrWhiteSpace(_subscription?.PushConfig?.PushEndpoint) ? "Push" : "Pull";
+
+        [Category(Category)]
+        [Description("Push endpoint URL")]
+        public string PushEndpoint => _subscription?.PushConfig?.PushEndpoint;
 
         [Category(Category)]
         [Description("Acknowledgment Deadline")]

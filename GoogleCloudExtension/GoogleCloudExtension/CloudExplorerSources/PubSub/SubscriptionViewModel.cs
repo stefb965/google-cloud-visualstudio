@@ -7,12 +7,10 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using GoogleCloudExtension.Accounts;
+using Google.Apis.Pubsub.v1.Data;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Dialogs;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.ToolWindows;
-using GoogleCloudExtension.DataSources;
-using GoogleCloudExtension.DataSources.Models;
 using GoogleCloudExtension.Utils;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -31,7 +29,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         public event EventHandler ItemChanged;
 
-        public SubscriptionViewModel(PubSubSourceRootViewModel owner, PubSubSubscription subscription)
+        public SubscriptionViewModel(PubSubSourceRootViewModel owner, Subscription subscription)
         {
             _owner = owner;
             _item = new Lazy<SubscriptionItem>(() => new SubscriptionItem(subscription));
@@ -74,7 +72,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnBrowseSubscription()
         {
-            var url = $"https://console.cloud.google.com/cloudpubsub/subscriptions/{_item.Value.Name}?edit=false&project={_owner.Owner.CurrentProject.Id}";
+            var url = $"https://console.cloud.google.com/cloudpubsub/subscriptions/{_item.Value.Name}?edit=false&project={_owner.Owner.CurrentProject.ProjectId}";
             Debug.WriteLine($"Starting subscription browsing at: {url}");
             Process.Start(url);
         }
@@ -82,13 +80,12 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         private async void OnDeleteSubscription()
         {
             if (!UserPromptUtils.YesNoPrompt($"Do you want to delete the subscription \"{_item.Value.FullName}\"?",
-                "Confirm")) return;
+                "Confirm deletion")) return;
 
             GcpOutputWindow.Activate();
             GcpOutputWindow.OutputLine($"Deleting \"{_item.Value.FullName}\" subscription.");
 
-            var oauthToken = await AccountsManager.GetAccessTokenAsync();
-            await PubSubDataSource.DeleteSubscriptionAsync(_item.Value.FullName, oauthToken);
+            await _owner.DataSource.DeleteSubscriptionAsync(_item.Value.FullName);
             _owner.Owner.Refresh();
         }
     }

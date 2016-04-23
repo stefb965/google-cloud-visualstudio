@@ -1,102 +1,104 @@
 ﻿// Copyright 2016 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
-using GoogleCloudExtension.DataSources.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Pubsub.v1;
+using Google.Apis.Pubsub.v1.Data;
 
 namespace GoogleCloudExtension.DataSources
 {
     /// <summary>
-    /// Data source that returns information about Pub/Sub topics and subscriptions. Calls the Pub/Sub API according 
-    /// to https://cloud.google.com/pubsub/overview.
+    /// Data source that returns information about Pub/Sub topics and subscriptions for a particular project and credentials.
     /// </summary>
-    public static class PubSubDataSource
+    public class PubSubDataSource : DataSourceBase<PubsubService>
     {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="projectId"></param>
+        /// <param name="credential"></param>
+        public PubSubDataSource(string projectId, GoogleCredential credential) : base(projectId, () => CreateService(credential))
+        { }
+
+        private static PubsubService CreateService(GoogleCredential credential)
+        {
+            return new PubsubService(new Google.Apis.Services.BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+            });
+        }
+
         /// <summary>
         /// Fetches the list of topics for the given project.
         /// </summary>
-        /// <param name="projectId">The id of the project that owns the topics.</param>
-        /// <param name="oauthToken">The oauth token to use to authorize the call.</param>
         /// <returns>The list of topics.</returns>
-        public static Task<IList<PubSubTopic>> GetTopicListAsync(string projectId, string oauthToken)
+        public Task<IList<Topic>> GetTopicListAsync()
         {
-            var url = $"https://pubsub.googleapis.com/v1/projects/{projectId}/topics";
-            var client = new WebClient().SetOauthToken(oauthToken);
-
-            return ApiHelpers.LoadPagedListAsync<PubSubTopic, PubSubTopicPage>(
-                client,
-                url,
+            return LoadPagedListAsync(token =>
+            {
+                if (String.IsNullOrEmpty(token))
+                {
+                    Debug.WriteLine("Loading final page.");
+                    return Service.Projects.Topics.List($"projects/{ProjectId}").ExecuteAsync();
+                }
+                else
+                {
+                    Debug.WriteLine($"Loading page: {token}");
+                    var request = Service.Projects.Topics.List($"projects/{ProjectId}");
+                    request.PageToken = token;
+                    return request.ExecuteAsync();
+                }
+            },
                 x => x.Topics,
-                x => string.IsNullOrEmpty(x.NextPageToken) ? null : $"{url}&pageToken={x.NextPageToken}");
+                x => x.NextPageToken);
         }
 
         /// <summary>
         /// Fetches the list of subscriptions for the given project.
         /// </summary>
-        /// <param name="projectId">The id of the project that owns the subscriptions.</param>
-        /// <param name="oauthToken">The oauth token to use to authorize the call.</param>
         /// <returns>The list of subscriptions.</returns>
-        public static Task<IList<PubSubSubscription>> GetSubscriptionListAsync(string projectId, string oauthToken)
+        public Task<IList<Subscription>> GetSubscriptionListAsync()
         {
-            var url = $"https://pubsub.googleapis.com/v1/projects/{projectId}/subscriptions";
-            var client = new WebClient().SetOauthToken(oauthToken);
-
-            return ApiHelpers.LoadPagedListAsync<PubSubSubscription, PubSubSubscriptionPage>(
-                client,
-                url,
+            return LoadPagedListAsync(token =>
+            {
+                if (String.IsNullOrEmpty(token))
+                {
+                    Debug.WriteLine("Loading final page.");
+                    return Service.Projects.Subscriptions.List($"projects/{ProjectId}").ExecuteAsync();
+                }
+                else
+                {
+                    Debug.WriteLine($"Loading page: {token}");
+                    var request = Service.Projects.Subscriptions.List($"projects/{ProjectId}");
+                    request.PageToken = token;
+                    return request.ExecuteAsync();
+                }
+            },
                 x => x.Subscriptions,
-                x => string.IsNullOrEmpty(x.NextPageToken) ? null : $"{url}&pageToken={x.NextPageToken}");
+                x => x.NextPageToken);
         }
+
 
         /// <summary>
         /// Deletes given topic.
         /// </summary>
         /// <param name="topicId">The id of the topic to be deleted.</param>
-        /// <param name="oauthToken">The oauth token to use to authorize the call.</param>
-        public static async Task DeleteTopicAsync(string topicId, string oauthToken)
+        public async Task DeleteTopicAsync(string topicId)
         {
-            var url = $"https://pubsub.googleapis.com/v1/{topicId}";
-            var client = new ExtendedWebClient();
-            client.SetOauthToken(oauthToken);
-            client.HttpMethod = "DELETE";
-
-            try
-            {
-                var response = await client.DownloadStringTaskAsync(url);
-            }
-            catch (WebException ex)
-            {
-                Debug.WriteLine($"Request failed: {ex.Message}");
-                throw new DataSourceException(ex.Message, ex);
-            }
+            await Service.Projects.Topics.Delete(topicId).ExecuteAsync();
         }
 
         /// <summary>
         /// Deletes given subscription.
         /// </summary>
         /// <param name="subscriptionId">The id of the subscription to be deleted.</param>
-        /// <param name="oauthToken">The oauth token to use to authorize the call.</param>
-        public static async Task DeleteSubscriptionAsync(string subscriptionId, string oauthToken)
+        public async Task DeleteSubscriptionAsync(string subscriptionId)
         {
-            var url = $"https://pubsub.googleapis.com/v1/{subscriptionId}";
-            var client = new ExtendedWebClient();
-            client.SetOauthToken(oauthToken);
-            client.HttpMethod = "DELETE";
-               
-            try
-            {
-                var response = await client.DownloadStringTaskAsync(url);
-            }
-            catch (WebException ex)
-            {
-                Debug.WriteLine($"Request failed: {ex.Message}");
-                throw new DataSourceException(ex.Message, ex);
-            }
+            await Service.Projects.Subscriptions.Delete(subscriptionId).ExecuteAsync();
         }
     }
 }

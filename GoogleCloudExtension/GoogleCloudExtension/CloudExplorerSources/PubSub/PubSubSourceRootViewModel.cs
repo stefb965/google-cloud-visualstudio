@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Google.Apis.Pubsub.v1.Data;
 using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Dialogs;
 using GoogleCloudExtension.DataSources;
-using GoogleCloudExtension.DataSources.Models;
 using GoogleCloudExtension.Utils;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub
@@ -38,8 +38,12 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             IsError = true
         };
 
-        private IList<PubSubTopic> _topics;
-        private IList<PubSubSubscription> _subscriptions;
+        private IList<Topic> _topics;
+        private IList<Subscription> _subscriptions;
+
+        private Lazy<PubSubDataSource> _dataSource;
+
+        public PubSubDataSource DataSource => _dataSource.Value;
 
         public override ImageSource RootIcon => s_pubSubIcon.Value;
 
@@ -55,6 +59,8 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         {
             base.Initialize(owner);
 
+            InvalidateCredentials();
+
             var menuItems = new List<FrameworkElement>
             {
                 new MenuItem { Header = "Create topic", Command = new WeakCommand(OnCreateTopic) },
@@ -62,6 +68,24 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             };
 
             ContextMenu = new ContextMenu { ItemsSource = menuItems };
+        }
+
+        public override void InvalidateCredentials()
+        {
+            Debug.WriteLine("New credentials, invalidating the PubSub source.");
+            _dataSource = new Lazy<PubSubDataSource>(CreateDataSource);
+        }
+
+        private PubSubDataSource CreateDataSource()
+        {
+            if (Owner.CurrentProject != null)
+            {
+                return new PubSubDataSource(Owner.CurrentProject.ProjectId, AccountsManager.CurrentGoogleCredential);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private void OnCreateTopic()
@@ -72,7 +96,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnBrowseTopics()
         {
-            var url = $"https://console.cloud.google.com/cloudpubsub/topicList?project={Owner.CurrentProject.Id}";
+            var url = $"https://console.cloud.google.com/cloudpubsub/topicList?project={Owner.CurrentProject.ProjectId}";
             Debug.WriteLine($"Starting topics browsing at: {url}");
             Process.Start(url);
         }
@@ -81,8 +105,8 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         {
             try
             {
-                _topics = await LoadTopicList();
-                _subscriptions = await LoadSubscriptionList();
+                _topics = await DataSource.GetTopicListAsync();
+                _subscriptions = await DataSource.GetSubscriptionListAsync();
 
                 PresentTopicViewModels();
             }
@@ -115,18 +139,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             {
                 Children.Add(s_noItemsPlacehoder);
             }
-        }
-
-        private async Task<IList<PubSubTopic>> LoadTopicList()
-        {
-            var oauthToken = await AccountsManager.GetAccessTokenAsync();
-            return await PubSubDataSource.GetTopicListAsync(Owner.CurrentProject.Id, oauthToken);
-        }
-
-        private async Task<IList<PubSubSubscription>> LoadSubscriptionList()
-        {
-            var oauthToken = await AccountsManager.GetAccessTokenAsync();
-            return await PubSubDataSource.GetSubscriptionListAsync(Owner.CurrentProject.Id, oauthToken);
         }
     }
 }

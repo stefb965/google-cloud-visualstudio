@@ -4,7 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using GoogleCloudExtension.DataSources.Models;
+using Google.Apis.Pubsub.v1.Data;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 {
@@ -12,9 +12,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
     {
         private const string Category = "Topic Properties";
 
-        private readonly PubSubTopic _topic;
+        private readonly Topic _topic;
 
-        public TopicItem(PubSubTopic topic)
+        public TopicItem(Topic topic)
         {
             _topic = topic;
             Name = _topic.Name.Split(new[] { "/" }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();

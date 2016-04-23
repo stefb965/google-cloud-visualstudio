@@ -7,14 +7,11 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using GoogleCloudExtension.Accounts;
+using Google.Apis.Pubsub.v1.Data;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Dialogs;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.ToolWindows;
-using GoogleCloudExtension.DataSources;
-using GoogleCloudExtension.DataSources.Models;
 using GoogleCloudExtension.Utils;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub
@@ -33,7 +30,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         public event EventHandler ItemChanged;
 
-        public TopicViewModel(PubSubSourceRootViewModel owner, PubSubTopic topic, IEnumerable<PubSubSubscription> subscriptions)
+        public TopicViewModel(PubSubSourceRootViewModel owner, Topic topic, IEnumerable<Subscription> subscriptions)
         {
             _owner = owner;
             _item = new Lazy<TopicItem>(() => new TopicItem(topic));
@@ -83,20 +80,19 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         private async void OnDeleteTopic()
         {
             if (!UserPromptUtils.YesNoPrompt($"Do you want to delete the topic \"{_item.Value.FullName}\"?",
-                "Confirm")) return;
-
-            var oauthToken = await AccountsManager.GetAccessTokenAsync();
+                "Confirm deletion")) return;
 
             GcpOutputWindow.Activate();
 
             foreach (var subscription in _subscriptions)
             {
                 GcpOutputWindow.OutputLine($"Deleting \"{subscription.SubscriptionItem.FullName}\" subscription.");
-                await PubSubDataSource.DeleteSubscriptionAsync(subscription.SubscriptionItem.FullName, oauthToken);
+
+                await _owner.DataSource.DeleteSubscriptionAsync(subscription.SubscriptionItem.FullName);
             }
 
             GcpOutputWindow.OutputLine($"Deleting \"{_item.Value.FullName}\" topic.");
-            await PubSubDataSource.DeleteTopicAsync(_item.Value.FullName, oauthToken);
+            await _owner.DataSource.DeleteTopicAsync(_item.Value.FullName);
             _owner.Owner.Refresh();
         }
     }
