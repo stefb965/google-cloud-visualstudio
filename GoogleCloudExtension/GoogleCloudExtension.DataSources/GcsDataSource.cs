@@ -1,9 +1,12 @@
 ﻿// Copyright 2016 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
-using GoogleCloudExtension.DataSources.Models;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Storage.v1;
+using Google.Apis.Storage.v1.Data;
+using System;
 using System.Collections.Generic;
-using System.Net;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace GoogleCloudExtension.DataSources
@@ -12,24 +15,43 @@ namespace GoogleCloudExtension.DataSources
     /// Data source that returns information about Google Cloud Storage buckets. Calls the API according
     /// to the documentation at https://cloud.google.com/storage/docs/json_api/.
     /// </summary>
-    public static class GcsDataSource
+    public class GcsDataSource : DataSourceBase<StorageService>
     {
+        public GcsDataSource(string projectId, GoogleCredential credential): base(projectId, () => CreateService(credential))
+        { }
+
+        private static StorageService CreateService(GoogleCredential credential)
+        {
+            return new StorageService(new Google.Apis.Services.BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+            });
+        }
+
         /// <summary>
         /// Fetches the list of buckets for the given project.
         /// </summary>
-        /// <param name="projectId">The id of the project that owns the buckets.</param>
-        /// <param name="oauthToken">The oauth token to use to authorize the call.</param>
         /// <returns>The list of buckets.</returns>
-        public static Task<IList<Bucket>> GetBucketListAsync(string projectId, string oauthToken)
+        public Task<IList<Bucket>> GetBucketListAsync()
         {
-            var baseUrl = $"https://www.googleapis.com/storage/v1/b?project={projectId}";
-            var client = new WebClient().SetOauthToken(oauthToken);
-
-            return ApiHelpers.LoadPagedListAsync<Bucket, BucketPage>(
-                client,
-                baseUrl,
+            return LoadPagedListAsync(
+                (token) =>
+                {
+                    if (String.IsNullOrEmpty(token))
+                    {
+                        Debug.WriteLine("Loading final page.");
+                        return Service.Buckets.List(ProjectId).ExecuteAsync();
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"Loading page: {token}");
+                        var request = Service.Buckets.List(ProjectId);
+                        request.PageToken = token;
+                        return request.ExecuteAsync();
+                    }
+                },
                 x => x.Items,
-                x => string.IsNullOrEmpty(x.NextPageToken) ? null : $"{baseUrl}&pageToken={x.NextPageToken}");
+                x => x.NextPageToken);
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿// Copyright 2015 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
+using Google.Apis.Storage.v1.Data;
 using GoogleCloudExtension.CloudExplorer;
-using GoogleCloudExtension.DataSources.Models;
 using GoogleCloudExtension.Utils;
 using System;
 using System.Collections.Generic;
@@ -51,14 +51,11 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gcs
 
         private async void OnOpenBucket()
         {
-            var url = $"https://pantheon.corp.google.com/storage/browser/{_bucket.Name}/?project={_owner.Owner.CurrentProject.Id}";
+            var url = $"https://pantheon.corp.google.com/storage/browser/{_bucket.Name}/?project={_owner.Owner.CurrentProject.ProjectId}";
             Debug.WriteLine($"Starting bucket browsing at: {url}");
             Process.Start(url);
         }
 
-        private BucketItem GetItem()
-        {
-            return new BucketItem(_bucket);
-        }
+        private BucketItem GetItem() => new BucketItem(_bucket);
     }
 }

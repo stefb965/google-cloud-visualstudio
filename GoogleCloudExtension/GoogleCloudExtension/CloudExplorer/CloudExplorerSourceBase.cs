@@ -1,7 +1,7 @@
 ﻿// Copyright 2015 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
-using GoogleCloudExtension.DataSources.Models;
+using Google.Apis.CloudResourceManager.v1.Data;
 using System.Collections.Generic;
 
 namespace GoogleCloudExtension.CloudExplorer
@@ -15,7 +15,7 @@ namespace GoogleCloudExtension.CloudExplorer
 
         public IEnumerable<ButtonDefinition> Buttons => _buttons;
 
-        public GcpProject CurrentProject { get; set; }
+        public Project CurrentProject { get; set; }
 
         protected TRootViewModel ActualRoot => _root;
 
@@ -30,6 +30,11 @@ namespace GoogleCloudExtension.CloudExplorer
         public void Refresh()
         {
             _root.Refresh();
+        }
+
+        public void InvalidateCredentials()
+        {
+            _root.InvalidateCredentials();
         }
     }
 }

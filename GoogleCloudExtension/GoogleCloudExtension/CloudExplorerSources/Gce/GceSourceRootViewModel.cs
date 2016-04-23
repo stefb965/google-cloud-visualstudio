@@ -1,13 +1,14 @@
 ﻿// Copyright 2015 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
-using GoogleCloudExtension.CloudExplorer;
+using Google.Apis.Compute.v1.Data;
 using GoogleCloudExtension.Accounts;
+using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.DataSources;
-using GoogleCloudExtension.DataSources.Models;
 using GoogleCloudExtension.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -36,7 +37,10 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
         private static readonly TreeLeaf s_noZonesPlaceholder = new TreeLeaf { Content = "No zones" };
 
         private bool _showOnlyWindowsInstances = false;
-        private IList<GceInstance> _instances;
+        private IList<Instance> _instances;
+        private Lazy<GceDataSource> _dataSource;
+
+        public GceDataSource DataSource => _dataSource.Value;
 
         public override TreeLeaf ErrorPlaceholder => s_errorPlaceholder;
 
@@ -47,7 +51,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
         public override string RootCaption => "Google Compute Engine";
 
         public override ImageSource RootIcon => s_gceIcon.Value;
-
 
         public bool ShowOnlyWindowsInstances
         {
@@ -61,6 +64,31 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
                 _showOnlyWindowsInstances = value;
 
                 PresentZoneViewModels();
+            }
+        }
+
+        public override void Initialize(ICloudExplorerSource owner)
+        {
+            base.Initialize(owner);
+
+            InvalidateCredentials();
+        }
+
+        public override void InvalidateCredentials()
+        {
+            Debug.WriteLine("New credentials, invalidating data source for GCE");
+            _dataSource = new Lazy<GceDataSource>(CreateDataSource); 
+        }
+
+        private GceDataSource CreateDataSource()
+        {
+            if (Owner.CurrentProject != null)
+            {
+                return new GceDataSource(Owner.CurrentProject.ProjectId, AccountsManager.CurrentGoogleCredential);
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -100,17 +128,16 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
             }
         }
 
-        private async Task<IList<GceInstance>> LoadGceInstances()
+        private async Task<IList<Instance>> LoadGceInstances()
         {
-            var oauthToken = await AccountsManager.GetAccessTokenAsync();
-            return await GceDataSource.GetInstanceListAsync(Owner.CurrentProject.Id, oauthToken);
+            return await _dataSource.Value.GetInstanceListAsync();
         }
 
         private IList<ZoneViewModel> GetZoneViewModels()
         {
             return _instances?
                 .Where(x => !_showOnlyWindowsInstances || x.IsWindowsInstance())
-                .GroupBy(x => x.ZoneName)
+                .GroupBy(x => x.ZoneName())
                 .Select(x => new ZoneViewModel(this, x.Key, x)).ToList();
         }
     }

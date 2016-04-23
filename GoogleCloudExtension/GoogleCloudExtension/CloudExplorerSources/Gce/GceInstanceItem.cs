@@ -1,8 +1,8 @@
 ﻿// Copyright 2015 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
+using Google.Apis.Compute.v1.Data;
 using GoogleCloudExtension.DataSources;
-using GoogleCloudExtension.DataSources.Models;
 using System.ComponentModel;
 
 namespace GoogleCloudExtension.CloudExplorerSources.Gce
@@ -11,9 +11,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
     {
         private const string Category = "Instance Properties";
 
-        protected GceInstance Instance { get; }
+        protected Instance Instance { get; }
 
-        public GceInstanceItem(GceInstance instance)
+        public GceInstanceItem(Instance instance)
         {
             Instance = instance;
         }
@@ -24,7 +24,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
 
         [Category(Category)]
         [Description("The zone of the instance")]
-        public string Zone => Instance.ZoneName;
+        public string Zone => Instance.ZoneName();
 
         [Category(Category)]
         [Description("The machine type for the instance")]

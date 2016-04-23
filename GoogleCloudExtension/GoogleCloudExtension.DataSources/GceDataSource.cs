@@ -1,14 +1,14 @@
 ﻿// Copyright 2016 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
-using GoogleCloudExtension.DataSources.Models;
-using Newtonsoft.Json;
+using Google;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Compute.v1;
+using Google.Apis.Compute.v1.Data;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace GoogleCloudExtension.DataSources
@@ -17,27 +17,38 @@ namespace GoogleCloudExtension.DataSources
     /// Data source that returns information about GCE instances. Calls the GCE API according 
     /// to https://cloud.google.com/compute/docs/reference/latest/.
     /// </summary>
-    public static class GceDataSource
+    public class GceDataSource : DataSourceBase<ComputeService>
     {
         private static readonly List<GceOperation> s_pendingOperations = new List<GceOperation>();
+
+        public GceDataSource(string projectId, GoogleCredential credential) : base(projectId, () => CreateService(credential))
+        { }
+
+        private static ComputeService CreateService(GoogleCredential credential)
+        {
+            return new ComputeService(new Google.Apis.Services.BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+            });
+        }
 
         /// <summary>
         /// Returns the list of instances for the given <paramref name="projectId"/>.
         /// </summary>
         /// <param name="projectId">The project id that contains the instances.</param>
-        /// <param name="oauthToken">The oauth token to use to authenticate the call.</param>
+        /// <param name="credential">The oauth token to use to authenticate the call.</param>
         /// <returns></returns>
-        public static async Task<IList<GceInstance>> GetInstanceListAsync(string projectId, string oauthToken)
+        public async Task<IList<Instance>> GetInstanceListAsync()
         {
             try
             {
                 // 1) Request the list of zones for this project.
-                var zones = await GetZoneListAsync(projectId, oauthToken);
+                var zones = await GetZoneListAsync();
 
                 //  2) Request in parallel the instances in each zone.
-                var result = new List<GceInstance>();
+                var result = new List<Instance>();
                 var requestResults = zones
-                    .Select(x => GetInstancesInZoneListAsync(projectId, x.Name, oauthToken));
+                    .Select(x => GetInstancesInZoneListAsync(x.Name));
 
                 // 3) Merge the results into a single list.
                 foreach (var instancesPerZone in await Task.WhenAll(requestResults))
@@ -46,14 +57,9 @@ namespace GoogleCloudExtension.DataSources
                 }
                 return result;
             }
-            catch (WebException ex)
+            catch (GoogleApiException ex)
             {
-                Debug.WriteLine($"Failed to download data: {ex.Message}");
-                throw new DataSourceException(ex.Message, ex);
-            }
-            catch (JsonException ex)
-            {
-                Debug.WriteLine($"Failed to parse response: {ex.Message}");
+                Debug.WriteLine($"Failed to call api: {ex.Message}");
                 throw new DataSourceException(ex.Message, ex);
             }
         }
@@ -66,26 +72,15 @@ namespace GoogleCloudExtension.DataSources
         /// <param name="name">The name of the instance,</param>
         /// <param name="oauthToken">The oauth token to use to authenticate the call.</param>
         /// <returns></returns>
-        public static async Task<GceInstance> GetInstance(string projectId, string zoneName, string name, string oauthToken)
+        public async Task<Instance> GetInstance(string zoneName, string name)
         {
             try
             {
-                var url = $"https://www.googleapis.com/compute/v1/projects/{projectId}/zones/{zoneName}/instances/{name}";
-                var client = new WebClient().SetOauthToken(oauthToken);
-                var response = await client.DownloadStringTaskAsync(url);
-                var result = JsonConvert.DeserializeObject<GceInstance>(response);
-                result.ProjectId = projectId;
-                result.ZoneName = zoneName;
-                return result;
+                return await Service.Instances.Get(ProjectId, zoneName, name).ExecuteAsync();
             }
-            catch (WebException ex)
+            catch (GoogleApiException ex)
             {
-                Debug.WriteLine($"Failed to download data: {ex.Message}");
-                throw new DataSourceException(ex.Message, ex);
-            }
-            catch (JsonException ex)
-            {
-                Debug.WriteLine($"Failed to parse response: {ex.Message}");
+                Debug.WriteLine($"Failed to call api: {ex.Message}");
                 throw new DataSourceException(ex.Message, ex);
             }
         }
@@ -93,89 +88,48 @@ namespace GoogleCloudExtension.DataSources
         /// <summary>
         /// Given an instance already fetched, reload it's data and return a new instance with the fresh data.
         /// </summary>
-        /// <param name="instance">The instance to refresh.</param>
-        /// <param name="oauthToken">The oauth token to use to authenticate the call.</param>
         /// <returns></returns>
-        public static Task<GceInstance> RefreshInstance(GceInstance instance, string oauthToken)
-        {
-            return GetInstance(projectId: instance.ProjectId, zoneName: instance.ZoneName, name: instance.Name, oauthToken: oauthToken);
-        }
+        public Task<Instance> RefreshInstance(Instance instance) => GetInstance(
+            zoneName: instance.ZoneName(),
+            name: instance.Name);
 
         public static IEnumerable<GceOperation> GetPendingOperations() => s_pendingOperations;
 
-        public static GceOperation GetPendingOperation(string projectId, string zoneName, string name) => s_pendingOperations
+        public GceOperation GetPendingOperation(string projectId, string zoneName, string name) =>
+            s_pendingOperations
             .Where(x => !x.OperationTask.IsCompleted)
             .FirstOrDefault(x => x.ProjectId == projectId && x.ZoneName == zoneName && x.Name == name);
 
-        public static GceOperation GetPendingOperation(GceInstance instance) => GetPendingOperation(projectId: instance.ProjectId, zoneName: instance.ZoneName, name: instance.Name);
+        public GceOperation GetPendingOperation(Instance instance) => 
+            GetPendingOperation(projectId: ProjectId, zoneName: instance.ZoneName(), name: instance.Name);
 
-        public static Task StopInstanceAsync(GceInstance instance, string oauthToken)
+        public GceOperation StopInstance(Instance instance)
         {
-            return StopInstanceAsync(
-                projectId: instance.ProjectId,
-                zoneName: instance.ZoneName,
-                name: instance.Name,
-                oauthToken: oauthToken);
+            return StopInstance(zoneName: instance.ZoneName(), name: instance.Name);
         }
 
-        public static Task StopInstanceAsync(string projectId, string zoneName, string name, string oauthToken)
+        public GceOperation StopInstance(string zoneName, string name)
         {
             var operation = new GceOperation(
                           operationType: OperationType.StopInstance,
-                          projectId: projectId,
+                          projectId: ProjectId,
                           zoneName: zoneName,
                           name: name);
-            operation.OperationTask = StopInstanceImplAsync(operation, projectId, zoneName, name, oauthToken);
-            return operation.OperationTask;
-        }
-
-        public static GceOperation StopInstance(GceInstance instance, string oauthToken)
-        {
-            return StopInstance(
-                projectId: instance.ProjectId,
-                zoneName: instance.ZoneName,
-                name: instance.Name,
-                oauthToken: oauthToken);
-        }
-
-        public static GceOperation StopInstance(string projectId, string zoneName, string name, string oauthToken)
-        {
-            var operation = new GceOperation(
-                          operationType: OperationType.StopInstance,
-                          projectId: projectId,
-                          zoneName: zoneName,
-                          name: name);
-            operation.OperationTask = StopInstanceImplAsync(operation, projectId, zoneName, name, oauthToken);
+            operation.OperationTask = StopInstanceImplAsync(operation, zoneName, name);
             return operation;
         }
 
-        private static async Task StopInstanceImplAsync(GceOperation pendingOperation, string projectId, string zoneName, string name, string oauthToken)
+        private async Task StopInstanceImplAsync(GceOperation pendingOperation, string zoneName, string name)
         {
-            var client = new WebClient().SetOauthToken(oauthToken);
-            var url = $"https://www.googleapis.com/compute/v1/projects/{projectId}/zones/{zoneName}/instances/{name}/stop";
-
             try
             {
-                var response = await client.UploadStringTaskAsync(url, "");
-                var operation = JsonConvert.DeserializeObject<ZoneOperation>(response);
-
+                var operation = await Service.Instances.Stop(ProjectId, zoneName, name).ExecuteAsync();
                 s_pendingOperations.Add(pendingOperation);
-
-                await operation.Wait(project: projectId, zone: zoneName, oauthToken: oauthToken);
+                await operation.NewWait(Service, ProjectId);
             }
-            catch (WebException ex)
+            catch (GoogleApiException ex)
             {
-                Debug.WriteLine($"Failed to send request: {ex.Message}");
-                throw new DataSourceException(ex.Message, ex);
-            }
-            catch (JsonException ex)
-            {
-                Debug.WriteLine($"Failed to parse response: {ex.Message}");
-                throw new DataSourceException(ex.Message, ex);
-            }
-            catch (ZoneOperationException ex)
-            {
-                Debug.WriteLine($"Operaiton failed: {ex.Message}");
+                Debug.WriteLine($"Failed to call api: {ex.Message}");
                 throw new DataSourceException(ex.Message, ex);
             }
             finally
@@ -184,82 +138,38 @@ namespace GoogleCloudExtension.DataSources
             }
         }
 
-        public static Task StartInstanceAsync(GceInstance instance, string oauthToken)
+        public GceOperation StartInstance(Instance instance)
         {
-            return StartInstanceAsync(
-                projectId: instance.ProjectId,
-                zoneName: instance.ZoneName,
-                name: instance.Name,
-                oauthToken: oauthToken);
+            return StartInstance(zoneName: instance.ZoneName(), name: instance.Name);
         }
 
-        public static Task StartInstanceAsync(string projectId, string zoneName, string name, string oauthToken)
+        public GceOperation StartInstance(string zoneName, string name)
         {
             var operation = new GceOperation(
                 operationType: OperationType.StartInstance,
-                projectId: projectId,
+                projectId: ProjectId,
                 zoneName: zoneName,
                 name: name);
-            operation.OperationTask = StartInstanceImplAsync(operation, projectId, zoneName, name, oauthToken);
-            return operation.OperationTask;
-        }
-
-        public static GceOperation StartInstance(GceInstance instance, string oauthToken)
-        {
-            return StartInstance(
-                projectId: instance.ProjectId,
-                zoneName: instance.ZoneName,
-                name: instance.Name,
-                oauthToken: oauthToken);
-        }
-
-        public static GceOperation StartInstance(string projectId, string zoneName, string name, string oauthToken)
-        {
-            var operation = new GceOperation(
-                operationType: OperationType.StartInstance,
-                projectId: projectId,
-                zoneName: zoneName,
-                name: name);
-            operation.OperationTask = StartInstanceImplAsync(operation, projectId, zoneName, name, oauthToken);
+            operation.OperationTask = StartInstanceImplAsync(operation, zoneName, name);
             return operation;
         }
 
-        private static async Task StartInstanceImplAsync(GceOperation pendingOperation, string projectId, string zoneName, string name, string oauthToken)
+        private async Task StartInstanceImplAsync(GceOperation pendingOperation, string zoneName, string name)
         {
-            var client = new WebClient().SetOauthToken(oauthToken);
-            var url = $"https://www.googleapis.com/compute/v1/projects/{projectId}/zones/{zoneName}/instances/{name}/start";
-
             try
             {
-                var response = await client.UploadStringTaskAsync(url, "");
-                var operation = JsonConvert.DeserializeObject<ZoneOperation>(response);
-
-                var operationTask = operation.Wait(project: projectId, zone: zoneName, oauthToken: oauthToken);
+                var operation = await Service.Instances.Start(ProjectId, zoneName, name).ExecuteAsync();
                 s_pendingOperations.Add(pendingOperation);
-
-                await operationTask;
+                await operation.NewWait(Service, ProjectId);
             }
-            catch (WebException ex)
+            catch (GoogleApiException ex)
             {
-                Debug.WriteLine($"Failed to send request: {ex.Message}");
-                throw new DataSourceException(ex.Message, ex);
-            }
-            catch (JsonException ex)
-            {
-                Debug.WriteLine($"Failed to parse response: {ex.Message}");
-                throw new DataSourceException(ex.Message, ex);
-            }
-            catch (ZoneOperationException ex)
-            {
-                Debug.WriteLine($"Operaiton failed: {ex.Message}");
+                Debug.WriteLine($"Failed to call api: {ex.Message}");
                 throw new DataSourceException(ex.Message, ex);
             }
             finally
             {
-                if (pendingOperation != null)
-                {
-                    s_pendingOperations.Remove(pendingOperation);
-                }
+                s_pendingOperations.Remove(pendingOperation);
             }
         }
 
@@ -270,45 +180,51 @@ namespace GoogleCloudExtension.DataSources
         /// <param name="projectId">The project id for which to fetch the zone data.</param>
         /// <param name="oauthToken">The auth token to use to authenticate this call.</param>
         /// <returns></returns>
-        private static Task<IList<Zone>> GetZoneListAsync(string projectId, string oauthToken)
+        private Task<IList<Zone>> GetZoneListAsync()
         {
-            var client = new WebClient().SetOauthToken(oauthToken);
-            string baseUrl = $"https://www.googleapis.com/compute/v1/projects/{projectId}/zones";
-
-            return ApiHelpers.LoadPagedListAsync<Zone, ZonePage>(
-                client,
-                baseUrl,
+            return LoadPagedListAsync(
+                (token) =>
+                {
+                    if (String.IsNullOrEmpty(token))
+                    {
+                        Debug.WriteLine("Fetching the last page.");
+                        return Service.Zones.List(ProjectId).ExecuteAsync();
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"Fetching page: {token}");
+                        var request = Service.Zones.List(ProjectId);
+                        request.PageToken = token;
+                        return request.ExecuteAsync();
+                    }
+                },
                 x => x.Items,
-                x => string.IsNullOrEmpty(x.NextPageToken) ? null : $"{baseUrl}?{x.NextPageToken}");
+                x => x.NextPageToken);
         }
 
         /// <summary>
         /// Fetches the list of instances in the given zone and project.
         /// </summary>
-        /// <param name="projectId">The project that contains the instances to fetch.</param>
-        /// <param name="zoneName">The zone name where the instance lies.</param>
-        /// <param name="oauthToken">The auth token to use to authenticate this call.</param>
-        /// <returns></returns>
-        private static async Task<IList<GceInstance>> GetInstancesInZoneListAsync(
-            string projectId,
-            string zoneName,
-            string oauthToken)
+        private Task<IList<Instance>> GetInstancesInZoneListAsync(string zoneName)
         {
-            var baseUrl = $"https://www.googleapis.com/compute/v1/projects/{projectId}/zones/{zoneName}/instances";
-            var client = new WebClient().SetOauthToken(oauthToken);
-            var result = await ApiHelpers.LoadPagedListAsync<GceInstance, GceInstancePage>(
-                client,
-                baseUrl,
+            return LoadPagedListAsync(
+                (token) =>
+                {
+                    if (String.IsNullOrEmpty(token))
+                    {
+                        Debug.WriteLine("Fetching last page.");
+                        return Service.Instances.List(ProjectId, zoneName).ExecuteAsync();
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"Fetching page: {token}");
+                        var request = Service.Instances.List(ProjectId, zoneName);
+                        request.PageToken = token;
+                        return request.ExecuteAsync();
+                    }
+                },
                 x => x.Items,
-                x => string.IsNullOrEmpty(x.NextPageToken) ? null : $"{baseUrl}?pageToken={x.NextPageToken}");
-
-            foreach (var instance in result)
-            {
-                instance.ZoneName = zoneName;
-                instance.ProjectId = projectId;
-            }
-            return result;
+                x => x.NextPageToken);
         }
-
     }
 }

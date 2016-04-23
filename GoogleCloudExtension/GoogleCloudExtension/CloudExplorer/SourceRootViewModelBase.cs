@@ -2,7 +2,6 @@
 // Licensed under the Apache License Version 2.0.
 
 using GoogleCloudExtension.Accounts;
-using GoogleCloudExtension.Utils;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
@@ -48,7 +47,7 @@ namespace GoogleCloudExtension.CloudExplorer
             Children.Add(LoadingPlaceholder);
         }
 
-        public async void Refresh()
+        public virtual async void Refresh()
         {
             if (!IsLoadedState)
             {
@@ -58,6 +57,9 @@ namespace GoogleCloudExtension.CloudExplorer
             IsLoadedState = false;
             await LoadDataWrapper();
         }
+
+        public virtual void InvalidateCredentials()
+        { }
 
         protected override async void OnIsExpandedChanged(bool newValue)
         {

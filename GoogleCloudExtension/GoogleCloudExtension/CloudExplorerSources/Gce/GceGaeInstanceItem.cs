@@ -1,8 +1,8 @@
 ﻿// Copyright 2015 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
+using Google.Apis.Compute.v1.Data;
 using GoogleCloudExtension.DataSources;
-using GoogleCloudExtension.DataSources.Models;
 using System.ComponentModel;
 
 namespace GoogleCloudExtension.CloudExplorerSources.Gce
@@ -11,7 +11,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
     {
         private const string GaeCategory = "AppEngine Properties";
 
-        public GceGaeInstanceItem(GceInstance instance) : base(instance)
+        public GceGaeInstanceItem(Instance instance) : base(instance)
         { }
 
         [Category(GaeCategory)]

@@ -1,21 +1,20 @@
 ﻿// Copyright 2015 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
-using GoogleCloudExtension.CloudExplorer;
+using Google.Apis.Compute.v1.Data;
 using GoogleCloudExtension.Accounts;
+using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.DataSources;
-using GoogleCloudExtension.DataSources.Models;
+using GoogleCloudExtension.OAuth;
 using GoogleCloudExtension.Utils;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
-using GoogleCloudExtension.OAuth;
 
 namespace GoogleCloudExtension.CloudExplorerSources.Gce
 {
@@ -32,9 +31,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
         private static readonly Lazy<ImageSource> s_instanceTransitionIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconTransitionResourcePath));
 
         private readonly GceSourceRootViewModel _owner;
-        private GceInstance _instance;
+        private Instance _instance;
 
-        private GceInstance Instance
+        private Instance Instance
         {
             get { return _instance; }
             set
@@ -66,7 +65,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
 
         public event EventHandler ItemChanged;
 
-        public GceInstanceViewModel(GceSourceRootViewModel owner, GceInstance instance)
+        public GceInstanceViewModel(GceSourceRootViewModel owner, Instance instance)
         {
             _owner = owner;
             Instance = instance;
@@ -76,7 +75,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
 
         private void UpdateInstanceState()
         {
-            GceOperation pendingOperation = GceDataSource.GetPendingOperation(Instance);
+            GceOperation pendingOperation = _owner.DataSource.GetPendingOperation(Instance);
             UpdateInstanceState(pendingOperation);
         }
 
@@ -109,14 +108,12 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
 
                 try
                 {
-                    var oauthToken = await AccountsManager.GetAccessTokenAsync();
-
                     // Await the end of the task. We can also get here if the task is faulted, 
                     // in which case we need to handle that case.
                     while (true)
                     {
                         // Refresh the instance before waiting for the operation to finish.
-                        Instance = await GceDataSource.RefreshInstance(Instance, oauthToken);
+                        Instance = await _owner.DataSource.RefreshInstance(Instance);
 
                         // Wait for the operation to finish up to the timeout, which we will use to refresh the
                         // state of the instance.
@@ -130,7 +127,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
                     }
 
                     // Refresh the instance state after the operation is finished.
-                    Instance = await GceDataSource.RefreshInstance(Instance, oauthToken);
+                    Instance = await _owner.DataSource.RefreshInstance(Instance);
                 }
                 catch (ZoneOperationException ex)
                 {
@@ -165,7 +162,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
                 }
 
                 // See if there are more operations.
-                pendingOperation = GceDataSource.GetPendingOperation(Instance);
+                pendingOperation = _owner.DataSource.GetPendingOperation(Instance);
             }
 
             // Normal state, no pending operations.
@@ -223,8 +220,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
                     return;
                 }
 
-                var oauthToken = await AccountsManager.GetAccessTokenAsync();
-                var operation = GceDataSource.StopInstance(Instance, oauthToken);
+                var operation = _owner.DataSource.StopInstance(Instance);
                 UpdateInstanceState(operation);
             }
             catch (DataSourceException ex)
@@ -258,8 +254,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
                     return;
                 }
 
-                var oauthToken = await AccountsManager.GetAccessTokenAsync();
-                var operation = GceDataSource.StartInstance(Instance, oauthToken);
+                var operation = _owner.DataSource.StartInstance(Instance);
                 UpdateInstanceState(operation);
             }
             catch (DataSourceException ex)
@@ -327,11 +322,11 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
         {
             switch (Instance.Status)
             {
-                case GceInstanceExtensions.RunningStatus:
+                case InstanceExtensions.RunningStatus:
                     Icon = s_instanceRunningIcon.Value;
                     break;
 
-                case GceInstanceExtensions.TerminatedStatus:
+                case InstanceExtensions.TerminatedStatus:
                     Icon = s_instanceStopedIcon.Value;
                     break;
 
