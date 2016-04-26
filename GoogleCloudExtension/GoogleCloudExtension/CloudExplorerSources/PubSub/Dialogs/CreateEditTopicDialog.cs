@@ -10,10 +10,15 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Dialogs
     {
         public CreateEditTopicDialog()
         {
-            Title = "Topic";
+            WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+            Title = "Create a topic";
             Width = 500;
             Height = 500;
-            WindowStartupLocation = WindowStartupLocation.CenterOwner;
+          
+            var model = new CreateEditTopicViewModel();
+            var content = new CreateEditTopicDialogControl { DataContext = model };
+            Content = content;
         }
     }
 }

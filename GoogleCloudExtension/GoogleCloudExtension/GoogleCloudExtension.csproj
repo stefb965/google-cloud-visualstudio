@@ -67,6 +67,10 @@
     <Compile Include="CloudExplorerSources\Gcs\GcsSourceRootViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditSubscriptionDialog.cs" />
     <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditTopicDialog.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditTopicDialogControl.xaml.cs">
+      <DependentUpon>CreateEditTopicDialogControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditTopicViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionItem.cs" />
     <Compile Include="CloudExplorerSources\PubSub\ToolWindows\PullToolWindow.cs" />
@@ -155,6 +159,7 @@
     <Resource Include="CloudExplorerSources\Gce\Resources\instance_icon_transition.png" />
     <Resource Include="CloudExplorerSources\PubSub\Resources\item_icon.png" />
     <Resource Include="CloudExplorerSources\PubSub\Resources\pubsub.png" />
+    <Resource Include="CloudExplorerSources\PubSub\Resources\hint.png" />
     <Content Include="License.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -347,6 +352,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="CloudExplorerSources\PubSub\Dialogs\CreateEditTopicDialogControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="CloudExplorer\CloudExplorerToolWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
