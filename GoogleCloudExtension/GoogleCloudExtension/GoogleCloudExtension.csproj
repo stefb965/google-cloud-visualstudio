@@ -65,12 +65,11 @@
     <Compile Include="CloudExplorerSources\Gcs\BucketViewModel.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSource.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSourceRootViewModel.cs" />
-    <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditSubscriptionDialog.cs" />
-    <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditTopicDialog.cs" />
-    <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditTopicDialogControl.xaml.cs">
-      <DependentUpon>CreateEditTopicDialogControl.xaml</DependentUpon>
+    <Compile Include="CloudExplorerSources\PubSub\CreateTopic\CreateTopicDialogWindow.xaml.cs">
+      <DependentUpon>CreateTopicDialogWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditTopicViewModel.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\CreateTopic\CreateTopicViewModel.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditSubscriptionDialog.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionItem.cs" />
     <Compile Include="CloudExplorerSources\PubSub\ToolWindows\PullToolWindow.cs" />
@@ -352,7 +351,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="CloudExplorerSources\PubSub\Dialogs\CreateEditTopicDialogControl.xaml">
+    <Page Include="CloudExplorerSources\PubSub\CreateTopic\CreateTopicDialogWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CloudExplorerSources\PubSub\Styles\Styles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

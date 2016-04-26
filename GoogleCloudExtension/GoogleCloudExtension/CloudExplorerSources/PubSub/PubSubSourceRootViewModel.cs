@@ -12,7 +12,7 @@ using System.Windows.Media;
 using Google.Apis.Pubsub.v1.Data;
 using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.CloudExplorer;
-using GoogleCloudExtension.CloudExplorerSources.PubSub.Dialogs;
+using GoogleCloudExtension.CloudExplorerSources.PubSub.CreateTopic;
 using GoogleCloudExtension.DataSources;
 using GoogleCloudExtension.Utils;
 
@@ -90,7 +90,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnCreateTopic()
         {
-            var dlg = new CreateEditTopicDialog();
+            var dlg = new CreateTopicDialogWindow();
             dlg.ShowModal();
         }
 
