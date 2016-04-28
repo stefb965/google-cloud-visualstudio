@@ -65,11 +65,8 @@
     <Compile Include="CloudExplorerSources\Gcs\BucketViewModel.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSource.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSourceRootViewModel.cs" />
-    <Compile Include="CloudExplorerSources\PubSub\CreateTopic\CreateTopicDialogWindow.xaml.cs">
-      <DependentUpon>CreateTopicDialogWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="CloudExplorerSources\PubSub\CreateTopic\CreateTopicViewModel.cs" />
-    <Compile Include="CloudExplorerSources\PubSub\Dialogs\CreateEditSubscriptionDialog.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\DataSourceManager.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\ToolWindows\CreateEditSubscriptionDialog.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionItem.cs" />
     <Compile Include="CloudExplorerSources\PubSub\ToolWindows\PullToolWindow.cs" />
@@ -78,6 +75,11 @@
     <Compile Include="CloudExplorerSources\PubSub\TopicViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\PubSubSourceRootViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\PubSubSource.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Windows\CreateTopicDialog.xaml.cs">
+      <DependentUpon>CreateTopicDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CloudExplorerSources\PubSub\Windows\CreateTopicViewModel.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Windows\PrefixedTextBox.cs" />
     <Compile Include="CloudExplorer\CloudExplorerSourceException.cs" />
     <Compile Include="CloudExplorer\SourceRootViewModelBase.cs" />
     <Compile Include="CloudExplorer\ButtonDefinition.cs" />
@@ -351,11 +353,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="CloudExplorerSources\PubSub\CreateTopic\CreateTopicDialogWindow.xaml">
+    <Page Include="CloudExplorerSources\PubSub\Windows\Styles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="CloudExplorerSources\PubSub\Styles\Styles.xaml">
+    <Page Include="CloudExplorerSources\PubSub\Windows\CreateTopicDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
