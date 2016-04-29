@@ -6,7 +6,7 @@ using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.DataSources;
 
-namespace GoogleCloudExtension.CloudExplorerSources.PubSub
+namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
 {
     public class DataSourceManager
     {

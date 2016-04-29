@@ -9,13 +9,17 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
+namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
 {
     internal class PrefixedTextBox : RichTextBox
     {
         public static readonly DependencyProperty PrefixProperty = DependencyProperty.Register(
            "Prefix", typeof(string), typeof(PrefixedTextBox),
-           new PropertyMetadata((obj, e) => (obj as PrefixedTextBox)?.InitPrefixText((string)e.NewValue)));
+           new PropertyMetadata((obj, e) => (obj as PrefixedTextBox)?.PrefixTextUpdate((string)e.NewValue)));
+
+        public static readonly DependencyProperty UnprefixedTextProperty = DependencyProperty.Register(
+           "UnprefixedText", typeof(string), typeof(PrefixedTextBox),
+           new PropertyMetadata(string.Empty));
 
         private TextPointer _inputStartPointer;
 
@@ -29,43 +33,60 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             set { SetValue(PrefixProperty, value); }
         }
 
+        public string UnprefixedText
+        {
+            get { return (string)GetValue(UnprefixedTextProperty); }
+            set { SetValue(UnprefixedTextProperty, value); }
+        }
+
         public PrefixedTextBox()
         {
             DataObject.AddPastingHandler(this, PrefixedTextBox_Paste);
             PreviewTextInput += PrefixedTextBox_PreviewTextInput;
             PreviewKeyDown += PrefixedTextBox_PreviewKeyDown;
             TextChanged += PrefixedTextBox_TextChanged;
+
+            //Disable drag&drop of parts of the text. 
+            //That prevents prefix changes by dragging.
+            AllowDrop = false;
+
+            //Set caret position to the end of document. 
+            //So user will be able to start text imput right after prefix.
+            CaretPosition = Document.ContentEnd;
         }
 
-        private void InitPrefixText(string prefix)
+        private void PrefixTextUpdate(string prefix)
         {
             Document.PageWidth = 3000;
 
             var range = new TextRange(Document.ContentStart, Document.ContentEnd) { Text = prefix };
             range.ApplyPropertyValue(TextElement.ForegroundProperty, PrefixForeground);
 
-            _inputStartPointer = GetPointerByOffset(prefix.Length - 1, Document);
-            CaretPosition = _inputStartPointer;
-
-            //Disable drag&drop of parts of the text. 
-            //That prevents prefix changes by dragging.
-            AllowDrop = false;
-
             //Clear undo stack
             IsUndoEnabled = false;
             IsUndoEnabled = true;
+
+            _inputStartPointer = GetPointerByOffset(prefix.Length - 1, Document);
+            SetUnprefixedText(UnprefixedText);
         }
 
-        private string GetText()
+        private string GetText(bool isUnprefixed = false)
         {
             var range = new TextRange(Document.ContentStart, Document.ContentEnd);
-            return range.Text.Replace(Environment.NewLine, string.Empty);
+            var text = range.Text.Replace(Environment.NewLine, string.Empty);
+
+            if (!isUnprefixed) return text;
+            var prefLength = Prefix?.Length ?? 0;
+            return text.Substring(prefLength, text.Length - prefLength);
         }
 
-        private int GetUnprefixedTextLength()
+        private void SetUnprefixedText(string text)
         {
-            var text = GetText();
-            return text.Length - Prefix.Length;
+            if (_inputStartPointer == null) return;
+            if (string.IsNullOrEmpty(text)) return;
+
+            var range = new TextRange(_inputStartPointer, Document.ContentEnd) { Text = text };
+            range.ApplyPropertyValue(TextElement.ForegroundProperty, Foreground);
         }
 
         private int GetCaretPositionWithinText()
@@ -137,7 +158,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             var txt = e.DataObject.GetData(typeof(string)) as string;
             if (string.IsNullOrWhiteSpace(txt)) return;
 
-            var unprefixedTextLength = GetUnprefixedTextLength();
+            var unprefixedTextLength = GetText(true).Length;
             if (MaxLength > 0 && unprefixedTextLength + txt.Length > MaxLength)
             {
                 e.CancelCommand();
@@ -165,18 +186,19 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             if (e.Changes.All(x => x.AddedLength == x.RemovedLength)) return;
             if (_inputStartPointer == null) return;
 
-            if (GetUnprefixedTextLength() == 0) ScrollToHome();
-            EnforceMaxLength();
+            var text = GetText(true);
+            UnprefixedText = text;
+
+            if (text.Length == 0) ScrollToHome();
+            EnforceMaxLength(text.Length);
 
             var range = new TextRange(_inputStartPointer, Document.ContentEnd);
             range.ApplyPropertyValue(TextElement.ForegroundProperty, Foreground);
         }
 
-        private void EnforceMaxLength()
+        private void EnforceMaxLength(int unprefixedTextLength)
         {
             if (MaxLength <= 0) return;
-
-            var unprefixedTextLength = GetUnprefixedTextLength();
             if (unprefixedTextLength <= MaxLength) return;
 
             var gap = 0;

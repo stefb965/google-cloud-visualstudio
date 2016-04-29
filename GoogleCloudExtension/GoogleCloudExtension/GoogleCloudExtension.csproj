@@ -65,7 +65,7 @@
     <Compile Include="CloudExplorerSources\Gcs\BucketViewModel.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSource.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSourceRootViewModel.cs" />
-    <Compile Include="CloudExplorerSources\PubSub\DataSourceManager.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Common\DataSourceManager.cs" />
     <Compile Include="CloudExplorerSources\PubSub\ToolWindows\CreateEditSubscriptionDialog.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionItem.cs" />
@@ -79,7 +79,8 @@
       <DependentUpon>CreateTopicDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="CloudExplorerSources\PubSub\Windows\CreateTopicViewModel.cs" />
-    <Compile Include="CloudExplorerSources\PubSub\Windows\PrefixedTextBox.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Common\PrefixedTextBox.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Common\DataViewModelBase.cs" />
     <Compile Include="CloudExplorer\CloudExplorerSourceException.cs" />
     <Compile Include="CloudExplorer\SourceRootViewModelBase.cs" />
     <Compile Include="CloudExplorer\ButtonDefinition.cs" />
@@ -333,6 +334,7 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />

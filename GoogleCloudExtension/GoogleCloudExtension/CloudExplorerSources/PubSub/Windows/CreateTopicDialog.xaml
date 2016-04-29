@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Windows"
              xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
+             xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Common"
              WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
              mc:Ignorable="d" Width="480" Height="210"
              d:DataContext="{d:DesignInstance {x:Type local:CreateTopicViewModel}}"
@@ -18,7 +19,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </ui:DialogWindow.Resources>
-    <Grid>
+    <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto" />
@@ -43,11 +44,13 @@
                             </StackPanel>
                         </Label.Content>
                     </Label>
-                    <local:PrefixedTextBox FontSize="14" Margin="4,0,4,0"
+                    <common:PrefixedTextBox FontSize="14" Margin="4,0,4,0"
                                            AcceptsReturn="False"
                                            MaxLength="255" x:Name="TopicName"
                                            PrefixForeground="#757575"
-                                           Prefix="{Binding TopicNamePrefix, Mode=OneTime}"/>
+                                           Prefix="{Binding TopicNamePrefix, Mode=OneTime}"
+                                           UnprefixedText="{Binding TopicName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}">
+                    </common:PrefixedTextBox>
                 </StackPanel>
             </StackPanel>
         </Grid>
@@ -55,7 +58,8 @@
               Grid.Row="1">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                         Margin="0,15,14,4">
-                <ui:DialogButton Content="Create" IsDefault="True"/>
+                <ui:DialogButton Content="Create" IsDefault="True"
+                                 Command="{Binding CreateTopicCommand}"/>
                 <ui:DialogButton Content="Cancel" IsCancel="True"/>
             </StackPanel>
         </Grid>
