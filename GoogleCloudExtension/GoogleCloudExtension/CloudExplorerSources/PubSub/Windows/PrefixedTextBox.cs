@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
+// Licensed under the Apache License Version 2.0.
+
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,9 +14,10 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
     internal class PrefixedTextBox : RichTextBox
     {
         public static readonly DependencyProperty PrefixProperty = DependencyProperty.Register(
-           "Prefix", typeof(string), typeof(PrefixedTextBox), new PropertyMetadata(OnPrefixPropertyChanged));
+           "Prefix", typeof(string), typeof(PrefixedTextBox),
+           new PropertyMetadata((obj, e) => (obj as PrefixedTextBox)?.InitPrefixText((string)e.NewValue)));
 
-        public TextPointer InputStartPointer { get; set; }
+        private TextPointer _inputStartPointer;
 
         public Brush PrefixForeground { get; set; }
 
@@ -25,39 +29,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             set { SetValue(PrefixProperty, value); }
         }
 
-        public string Text
-        {
-            get
-            {
-                var range = new TextRange(Document.ContentStart, Document.ContentEnd);
-                var text = range.Text;
-
-                return text;
-            }
-        }
-
-        public int TextCaretPosition
-        {
-            get
-            {
-                var range = new TextRange(Document.ContentStart, CaretPosition);
-                var pos = range.Text.Length;
-
-                return pos;
-            }
-        }
-
-        public int UserTextLengtn
-        {
-            get
-            {
-                var currText = Text.Replace(Environment.NewLine, string.Empty);
-                var len = currText.Length - Prefix.Length;
-
-                return len;
-            }
-        }
-
         public PrefixedTextBox()
         {
             DataObject.AddPastingHandler(this, PrefixedTextBox_Paste);
@@ -66,50 +37,44 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             TextChanged += PrefixedTextBox_TextChanged;
         }
 
-        private static void OnPrefixPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
-        {
-            var inst = obj as PrefixedTextBox;
-            inst?.InitPrefixText((string)e.NewValue);
-        }
-
         private void InitPrefixText(string prefix)
         {
-            Document.PageWidth = 1500;
+            Document.PageWidth = 3000;
 
             var range = new TextRange(Document.ContentStart, Document.ContentEnd) { Text = prefix };
             range.ApplyPropertyValue(TextElement.ForegroundProperty, PrefixForeground);
 
-            InputStartPointer = GetPointerByOffset(prefix.Length - 1, Document);
-            CaretPosition = InputStartPointer;
+            _inputStartPointer = GetPointerByOffset(prefix.Length - 1, Document);
+            CaretPosition = _inputStartPointer;
+
+            //Disable drag&drop of parts of the text. 
+            //That prevents prefix changes by dragging.
+            AllowDrop = false;
+
+            //Clear undo stack
+            IsUndoEnabled = false;
+            IsUndoEnabled = true;
         }
 
-        private bool IsInputAllowed(Key? key = null)
+        private string GetText()
         {
-            var textCaretPosition = TextCaretPosition;
-
-            if (key.HasValue)
-            {
-                switch (key.Value)
-                {
-                    case Key.Back:
-                        return textCaretPosition > Prefix.Length
-                            && Selection.Start.GetOffsetToPosition(InputStartPointer) < 0;
-                    case Key.Left:
-                        return true;
-                    case Key.Right:
-                        return true;
-                }
-            }
-
-            if (MaxLength > 0 && UserTextLengtn >= MaxLength)
-            {
-                return false;
-            }
-
-            return textCaretPosition >= Prefix.Length;
+            var range = new TextRange(Document.ContentStart, Document.ContentEnd);
+            return range.Text.Replace(Environment.NewLine, string.Empty);
         }
 
-        public static TextPointer GetPointerByOffset(int offset, FlowDocument doc)
+        private int GetUnprefixedTextLength()
+        {
+            var text = GetText();
+            return text.Length - Prefix.Length;
+        }
+
+        private int GetCaretPositionWithinText()
+        {
+            var range = new TextRange(Document.ContentStart, CaretPosition);
+            return range.Text.Length;
+        }
+
+        private static TextPointer GetPointerByOffset(int offset, FlowDocument doc)
         {
             if (offset == 0) return doc.ContentStart;
 
@@ -137,17 +102,43 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             return next;
         }
 
+        private bool IsInputAllowed(KeyEventArgs keyEvent = null)
+        {
+            var caretPos = GetCaretPositionWithinText();
+            var selOffset = Selection.Start.GetOffsetToPosition(_inputStartPointer);
+
+            if (keyEvent != null)
+            {
+                var key = keyEvent.Key;
+                if (keyEvent.KeyboardDevice.IsKeyDown(Key.LeftCtrl)
+                    && (key == Key.C || key == Key.A || key == Key.Z || key == Key.Y))
+                {
+                    return true;
+                }
+
+                switch (key)
+                {
+                    case Key.Back:
+                        return caretPos > Prefix.Length
+                            && selOffset < 0;
+                    case Key.Left:
+                        return true;
+                    case Key.Right:
+                        return true;
+                }
+            }
+
+            if (selOffset > 0) return false;
+            return caretPos >= Prefix.Length;
+        }
+
         private void PrefixedTextBox_Paste(object sender, DataObjectPastingEventArgs e)
         {
             var txt = e.DataObject.GetData(typeof(string)) as string;
-            if (string.IsNullOrWhiteSpace(txt))
-            {
-                e.CancelCommand();
-                return;
-            }
+            if (string.IsNullOrWhiteSpace(txt)) return;
 
-
-            if (MaxLength > 0 && UserTextLengtn + txt.Length > MaxLength)
+            var unprefixedTextLength = GetUnprefixedTextLength();
+            if (MaxLength > 0 && unprefixedTextLength + txt.Length > MaxLength)
             {
                 e.CancelCommand();
                 return;
@@ -161,8 +152,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 
         private void PrefixedTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-
-            if (!IsInputAllowed(e.Key)) e.Handled = true;
+            if (!IsInputAllowed(e)) e.Handled = true;
         }
 
         private void PrefixedTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -173,15 +163,27 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         private void PrefixedTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (e.Changes.All(x => x.AddedLength == x.RemovedLength)) return;
-            if (InputStartPointer == null) return;
+            if (_inputStartPointer == null) return;
 
-            if (UserTextLengtn == 0)
-            {
-                ScrollToHome();
-            }
+            if (GetUnprefixedTextLength() == 0) ScrollToHome();
+            EnforceMaxLength();
 
-            var range = new TextRange(InputStartPointer, Document.ContentEnd);
+            var range = new TextRange(_inputStartPointer, Document.ContentEnd);
             range.ApplyPropertyValue(TextElement.ForegroundProperty, Foreground);
+        }
+
+        private void EnforceMaxLength()
+        {
+            if (MaxLength <= 0) return;
+
+            var unprefixedTextLength = GetUnprefixedTextLength();
+            if (unprefixedTextLength <= MaxLength) return;
+
+            var gap = 0;
+            while (CaretPosition?.DeleteTextInRun(-1) == 0)
+            {
+                CaretPosition = CaretPosition.GetPositionAtOffset(--gap);
+            }
         }
     }
 }
