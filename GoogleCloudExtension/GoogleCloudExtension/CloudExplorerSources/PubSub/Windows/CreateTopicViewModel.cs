@@ -80,6 +80,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             await ValidateAsync();
             if (HasErrors) return;
 
+            Loading = true;
             var topicFullName = TopicNamePrefix + TopicName;
 
             GcpOutputWindow.Activate();
@@ -102,6 +103,10 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             {
                 GcpOutputWindow.OutputLine(ex.Message);
                 UserPromptUtils.ErrorPrompt(ex.Message, "Error");
+            }
+            finally
+            {
+                Loading = false;
             }
         }
     }

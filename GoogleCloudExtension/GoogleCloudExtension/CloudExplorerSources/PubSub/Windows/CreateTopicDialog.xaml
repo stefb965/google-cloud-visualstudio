@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Windows"
              xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
              xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Common"
+             xmlns:utils="clr-namespace:GoogleCloudExtension.Utils;assembly=GoogleCloudExtension.Utils"
              WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
              mc:Ignorable="d" Width="480" Height="210"
              d:DataContext="{d:DesignInstance {x:Type local:CreateTopicViewModel}}"
@@ -17,9 +18,10 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <utils:BooleanConverter x:Key="BooleanConverter" TrueValue="False" FalseValue="True"/>
         </ResourceDictionary>
     </ui:DialogWindow.Resources>
-    <Grid x:Name="RootGrid">
+    <Grid x:Name="RootGrid" IsEnabled="{Binding Loading, Converter={StaticResource BooleanConverter}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto" />
@@ -56,6 +58,7 @@
         </Grid>
         <Grid Background="{StaticResource PanelBackgroundBrush}"
               Grid.Row="1">
+            <ProgressBar IsIndeterminate="{Binding Loading}" VerticalAlignment="Top" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                         Margin="0,15,14,4">
                 <ui:DialogButton Content="Create" IsDefault="True"
