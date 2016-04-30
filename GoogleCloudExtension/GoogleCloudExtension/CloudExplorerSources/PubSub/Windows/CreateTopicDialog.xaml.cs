@@ -13,7 +13,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         {
             InitializeComponent();
 
-            _viewModel = new CreateTopicViewModel(owner, Dispatcher);
+            _viewModel = new CreateTopicViewModel(owner, this);
             DataContext = _viewModel;
         }
     }

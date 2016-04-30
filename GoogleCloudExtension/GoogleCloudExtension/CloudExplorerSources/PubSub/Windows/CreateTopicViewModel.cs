@@ -4,16 +4,16 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Windows.Media;
-using System.Windows.Threading;
+using Google;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Common;
 using GoogleCloudExtension.Utils;
+using Microsoft.VisualStudio.PlatformUI;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 {
     public class CreateTopicViewModel : DataViewModelBase
     {
-        private readonly Dispatcher _dispatcher;
         private static readonly Lazy<ImageSource> s_hintIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconResourcePath));
 
         private const string TopicNameRegex = "^(?!(?i)goog(?-i))[a-zA-Z]+[a-zA-Z0-9\\.\\-_~%+]*$";
@@ -21,15 +21,18 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         private const string IconResourcePath = "CloudExplorerSources/PubSub/Resources/hint.png";
 
         private bool _validateOnChange;
-        private string _topicName;
+        private string _topicName = string.Empty;
+        private readonly ICloudExplorerSource _owner;
+        private readonly DataSourceManager _dataManager;
+        private readonly DialogWindow _window;
 
         public ImageSource HintIcon => s_hintIcon.Value;
 
         public string TopicHintText => TopicHint;
 
-        public string TopicNamePrefix => $"projects/{Owner?.CurrentProject?.ProjectId}/topics/";
+        public string TopicNamePrefix => $"projects/{_owner?.CurrentProject?.ProjectId}/topics/";
 
-        public WeakCommand CreateTopicCommand { get; private set; }
+        public WeakCommand CreateTopicCommand { get; }
 
         [MinLength(3)]
         [MaxLength(255)]
@@ -46,24 +49,26 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 
                 if (_validateOnChange)
                 {
-                    ValidateAsync();
+                    ValidatePropertyAsync(_topicName);
                 }
             }
         }
 
-        public CreateTopicViewModel(ICloudExplorerSource owner,
-            Dispatcher dispatcher)
-            : base(owner)
+        public CreateTopicViewModel(ICloudExplorerSource owner, DialogWindow window)
         {
-            _dispatcher = dispatcher;
+            _owner = owner;
+            _window = window;
+
+            _dataManager = new DataSourceManager(owner);
+
             CreateTopicCommand = new WeakCommand(OnCreateTopic);
         }
 
-        protected override void ValidationFinished(bool hasErrors)
+        protected override void OnValidationFinished(bool hasErrors)
         {
-            base.ValidationFinished(hasErrors);
+            base.OnValidationFinished(hasErrors);
 
-            _dispatcher.Invoke(() =>
+            _window.Dispatcher.Invoke(() =>
             {
                 CreateTopicCommand.CanExecuteCommand = !hasErrors;
             });
@@ -74,6 +79,30 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             _validateOnChange = true;
             await ValidateAsync();
             if (HasErrors) return;
+
+            var topicFullName = TopicNamePrefix + TopicName;
+
+            GcpOutputWindow.Activate();
+
+            try
+            {
+                GcpOutputWindow.OutputLine($"Creating topic \"{topicFullName}\"");
+                await _dataManager.PubSubDataSource.CreateTopicAsync(topicFullName);
+                GcpOutputWindow.OutputLine($"Topic \"{topicFullName}\" has been created");
+
+                _window.Close();
+                _owner.Refresh();
+            }
+            catch (GoogleApiException ex)
+            {
+                GcpOutputWindow.OutputLine(ex.Message);
+                UserPromptUtils.ErrorPrompt(ex.Message, "Error");
+            }
+            catch (Exception ex)
+            {
+                GcpOutputWindow.OutputLine(ex.Message);
+                UserPromptUtils.ErrorPrompt(ex.Message, "Error");
+            }
         }
     }
 }

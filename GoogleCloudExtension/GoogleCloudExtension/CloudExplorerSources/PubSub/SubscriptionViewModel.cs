@@ -55,11 +55,11 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             dlg.ShowModal();
         }
 
-        private static int _pulWindowId = 0;
+        private static int _pullWindowId;
         public void OnPullSubscription()
         {
-            _pulWindowId++;
-            var window = GoogleCloudExtensionPackage.Instance.FindToolWindow(typeof(PullToolWindow), _pulWindowId, true);
+            _pullWindowId++;
+            var window = GoogleCloudExtensionPackage.Instance.FindToolWindow(typeof(PullToolWindow), _pullWindowId, true);
 
             if (window?.Frame == null)
             {
@@ -83,9 +83,10 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
                 "Confirm deletion")) return;
 
             GcpOutputWindow.Activate();
-            GcpOutputWindow.OutputLine($"Deleting \"{_item.Value.FullName}\" subscription.");
-
+            GcpOutputWindow.OutputLine($"Deleting subscription \"{_item.Value.FullName}\"");
             await _owner.DataSource.DeleteSubscriptionAsync(_item.Value.FullName);
+            GcpOutputWindow.OutputLine($"Subscription \"{_item.Value.FullName}\" has been deleted");
+
             _owner.Owner.Refresh();
         }
     }

@@ -82,6 +82,15 @@ namespace GoogleCloudExtension.DataSources
                 x => x.NextPageToken);
         }
 
+        /// <summary>
+        /// Creates new topic.
+        /// </summary>
+        /// <param name="topicId">The id of the topic to be created.</param>
+        public async Task CreateTopicAsync(string topicId)
+        {
+            var topic = new Topic();
+            await Service.Projects.Topics.Create(topic, topicId).ExecuteAsync();
+        }
 
         /// <summary>
         /// Deletes given topic.

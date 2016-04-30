@@ -8,32 +8,34 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.Utils;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
 {
     public class DataViewModelBase : ViewModelBase, INotifyDataErrorInfo
     {
+        private readonly object _lockObj = new object();
         private readonly ConcurrentDictionary<string, List<string>> _errors =
             new ConcurrentDictionary<string, List<string>>();
 
         public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
 
-        public ICloudExplorerSource Owner { get; set; }
+        public bool IsValid => !HasErrors;
 
-        public DataSourceManager DataManager { get; set; }
+        public bool HasErrors => _errors.Any(x => x.Value != null && x.Value.Any());
 
-        public bool HasErrors
+        public IEnumerable GetErrors(string propertyName)
         {
-            get { return _errors.Any(x => x.Value != null && x.Value.Any()); }
-        }
+            if (!string.IsNullOrWhiteSpace(propertyName))
+            {
+                List<string> errors;
+                _errors.TryGetValue(propertyName, out errors);
+                return errors;
+            }
 
-        public DataViewModelBase(ICloudExplorerSource owner)
-        {
-            Owner = owner;
-            DataManager = new DataSourceManager(owner);
+            return _errors.SelectMany(error => error.Value);
         }
 
         protected void RaiseErrorsChanged(string propertyName)
@@ -41,59 +43,84 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
             ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
         }
 
-        public IEnumerable GetErrors(string propertyName)
-        {
-            List<string> errors;
-            _errors.TryGetValue(propertyName, out errors);
-            return errors;
-        }
+        protected virtual void OnValidationFinished(bool hasErrors) { }
 
         public Task ValidateAsync()
         {
             return Task.Run(() => Validate());
         }
 
-        protected virtual void ValidationFinished(bool hasErrors) { }
-
-        public void Validate()
+        public Task ValidatePropertyAsync<T>(T value, [CallerMemberName] string propertyName = null)
         {
-            lock (_errors)
+            return Task.Run(() => ValidateProperty(value, propertyName));
+        }
+
+        private void ValidateProperty<T>(T value, string propertyName)
+        {
+            lock (_lockObj)
+            {
+                var validationContext = new ValidationContext(this, null, null)
+                {
+                    MemberName = propertyName
+                };
+
+                var validationResults = new List<ValidationResult>();
+                Validator.TryValidateProperty(value, validationContext, validationResults);
+
+                List<string> outputList;
+                _errors.TryRemove(propertyName, out outputList);
+                RaiseErrorsChanged(propertyName);
+
+                HandleValidationResults(validationResults);
+                OnValidationFinished(HasErrors);
+            }
+        }
+
+        private void Validate()
+        {
+            lock (_lockObj)
             {
                 var validationContext = new ValidationContext(this, null, null);
                 var validationResults = new List<ValidationResult>();
                 Validator.TryValidateObject(this, validationContext, validationResults, true);
 
-                foreach (var kv in _errors.ToList())
+                var errors = _errors.ToList();
+                foreach (var error in errors)
                 {
-                    if (validationResults.All(r => r.MemberNames.All(m => m != kv.Key)))
+                    if (validationResults.All(res => res.MemberNames.All(name => name != error.Key)))
                     {
                         List<string> outputList;
-                        _errors.TryRemove(kv.Key, out outputList);
-                        RaiseErrorsChanged(kv.Key);
+                        _errors.TryRemove(error.Key, out outputList);
+                        RaiseErrorsChanged(error.Key);
                     }
                 }
 
-                var results = from valResult in validationResults
-                              from memberNames in valResult.MemberNames
-                              group valResult by memberNames into valGroup
-                              select valGroup;
-
-                foreach (var prop in results)
-                {
-                    var messages = prop.Select(r => r.ErrorMessage).ToList();
-
-                    if (_errors.ContainsKey(prop.Key))
-                    {
-                        List<string> outLi;
-                        _errors.TryRemove(prop.Key, out outLi);
-                    }
-
-                    _errors.TryAdd(prop.Key, messages);
-                    RaisePropertyChanged(prop.Key);
-                }
+                HandleValidationResults(validationResults);
             }
 
-            ValidationFinished(HasErrors);
+            OnValidationFinished(HasErrors);
+        }
+
+        private void HandleValidationResults(IEnumerable<ValidationResult> validationResults)
+        {
+            var results = from res in validationResults
+                          from memberNames in res.MemberNames
+                          group res by memberNames into x
+                          select x;
+
+            foreach (var group in results)
+            {
+                var messages = group.Select(r => r.ErrorMessage).ToList();
+
+                if (_errors.ContainsKey(group.Key))
+                {
+                    List<string> outLi;
+                    _errors.TryRemove(group.Key, out outLi);
+                }
+
+                _errors.TryAdd(group.Key, messages);
+                RaiseErrorsChanged(group.Key);
+            }
         }
     }
 }

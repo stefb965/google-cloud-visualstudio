@@ -18,8 +18,8 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
            new PropertyMetadata((obj, e) => (obj as PrefixedTextBox)?.PrefixTextUpdate((string)e.NewValue)));
 
         public static readonly DependencyProperty UnprefixedTextProperty = DependencyProperty.Register(
-           "UnprefixedText", typeof(string), typeof(PrefixedTextBox),
-           new PropertyMetadata(string.Empty));
+            "UnprefixedText", typeof(string), typeof(PrefixedTextBox),
+            new PropertyMetadata((obj, e) => (obj as PrefixedTextBox)?.UnprefixedTextUpdate((string)e.NewValue)));
 
         private TextPointer _inputStartPointer;
 
@@ -68,6 +68,13 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
 
             _inputStartPointer = GetPointerByOffset(prefix.Length - 1, Document);
             SetUnprefixedText(UnprefixedText);
+        }
+
+        private void UnprefixedTextUpdate(string text)
+        {
+            if (text == GetText(true)) return;
+
+            SetUnprefixedText(text);
         }
 
         private string GetText(bool isUnprefixed = false)
@@ -186,12 +193,16 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
             if (e.Changes.All(x => x.AddedLength == x.RemovedLength)) return;
             if (_inputStartPointer == null) return;
 
-            var text = GetText(true);
-            UnprefixedText = text;
+            var unprefixedText = GetText(true);
+            UnprefixedText = unprefixedText;
 
-            if (text.Length == 0) ScrollToHome();
-            EnforceMaxLength(text.Length);
+            if (unprefixedText.Length == 0) ScrollToHome();
+            EnforceMaxLength(unprefixedText.Length);
+            SetUnprefixedTextForeground();
+        }
 
+        private void SetUnprefixedTextForeground()
+        {
             var range = new TextRange(_inputStartPointer, Document.ContentEnd);
             range.ApplyPropertyValue(TextElement.ForegroundProperty, Foreground);
         }

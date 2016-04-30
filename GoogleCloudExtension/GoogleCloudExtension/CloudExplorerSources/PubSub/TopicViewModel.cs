@@ -86,13 +86,15 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
             foreach (var subscription in _subscriptions)
             {
-                GcpOutputWindow.OutputLine($"Deleting \"{subscription.SubscriptionItem.FullName}\" subscription.");
-
+                GcpOutputWindow.OutputLine($"Deleting subscription \"{subscription.SubscriptionItem.FullName}\"");
                 await _owner.DataSource.DeleteSubscriptionAsync(subscription.SubscriptionItem.FullName);
+                GcpOutputWindow.OutputLine($"Subscription \"{subscription.SubscriptionItem.FullName}\" has been deleted");
             }
 
-            GcpOutputWindow.OutputLine($"Deleting \"{_item.Value.FullName}\" topic.");
+            GcpOutputWindow.OutputLine($"Deleting topic \"{_item.Value.FullName}\"");
             await _owner.DataSource.DeleteTopicAsync(_item.Value.FullName);
+            GcpOutputWindow.OutputLine($"Topic \"{_item.Value.FullName}\" has been deleted");
+
             _owner.Owner.Refresh();
         }
     }
