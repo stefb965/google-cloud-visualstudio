@@ -36,8 +36,7 @@
                 <controls:HintedLabel Margin="0,6,0,6" Text="Name:"
                                       Hint="{Binding TopicHintText}"/>
                 <common:PrefixedTextBox FontSize="14"
-                                           AcceptsReturn="False"
-                                           MaxLength="255" x:Name="TopicName"
+                                           MaxLength="10" x:Name="TopicName"
                                            Prefix="{Binding TopicNamePrefix, Mode=OneTime}"
                                            UnprefixedText="{Binding TopicName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}">
                 </common:PrefixedTextBox>

@@ -54,6 +54,8 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
             PreviewKeyDown += PrefixedTextBox_PreviewKeyDown;
             TextChanged += PrefixedTextBox_TextChanged;
 
+            AcceptsReturn = false;
+
             //Disable drag&drop of parts of the text. 
             //That prevents prefix changes by dragging.
             AllowDrop = false;
@@ -172,17 +174,21 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
             var txt = e.DataObject.GetData(typeof(string)) as string;
             if (string.IsNullOrWhiteSpace(txt)) return;
 
-            var unprefixedTextLength = GetText(true).Length;
-            if (MaxLength > 0 && unprefixedTextLength + txt.Length > MaxLength)
+            if (!IsInputAllowed())
             {
                 e.CancelCommand();
                 return;
             }
 
-            if (!IsInputAllowed())
+            var unprefixedTextLength = GetText(true).Length;
+            if (MaxLength > 0 && (unprefixedTextLength + txt.Length > MaxLength))
             {
-                e.CancelCommand();
+                txt = txt.Substring(0, MaxLength - unprefixedTextLength);
+                var dataObj = new DataObject();
+                dataObj.SetData(DataFormats.Text, txt);
+                e.DataObject = dataObj;
             }
+
         }
 
         private void PrefixedTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
