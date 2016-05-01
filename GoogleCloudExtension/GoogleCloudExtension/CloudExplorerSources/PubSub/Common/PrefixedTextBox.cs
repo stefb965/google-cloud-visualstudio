@@ -90,9 +90,8 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
         private void SetUnprefixedText(string text)
         {
             if (_inputStartPointer == null) return;
-            if (string.IsNullOrEmpty(text)) return;
 
-            var range = new TextRange(_inputStartPointer, Document.ContentEnd) { Text = text };
+            var range = new TextRange(_inputStartPointer, Document.ContentEnd) { Text = text ?? string.Empty };
             range.ApplyPropertyValue(TextElement.ForegroundProperty, Foreground);
         }
 

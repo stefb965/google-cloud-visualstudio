@@ -66,7 +66,7 @@
     <Compile Include="CloudExplorerSources\Gcs\GcsSource.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSourceRootViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\Common\DataSourceManager.cs" />
-    <Compile Include="CloudExplorerSources\PubSub\ToolWindows\CreateEditSubscriptionDialog.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Common\ExtensionBrushes.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionItem.cs" />
     <Compile Include="CloudExplorerSources\PubSub\ToolWindows\PullToolWindow.cs" />
@@ -75,9 +75,13 @@
     <Compile Include="CloudExplorerSources\PubSub\TopicViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\PubSubSourceRootViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\PubSubSource.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Windows\CreateEditSubscriptionDialog.xaml.cs">
+      <DependentUpon>CreateEditSubscriptionDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CloudExplorerSources\PubSub\Windows\CreateTopicDialog.xaml.cs">
       <DependentUpon>CreateTopicDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CloudExplorerSources\PubSub\Windows\CreateEditSubscriptionViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\Windows\CreateTopicViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\Common\PrefixedTextBox.cs" />
     <Compile Include="CloudExplorerSources\PubSub\Common\DataViewModelBase.cs" />
@@ -161,7 +165,6 @@
     <Resource Include="CloudExplorerSources\Gce\Resources\instance_icon_transition.png" />
     <Resource Include="CloudExplorerSources\PubSub\Resources\item_icon.png" />
     <Resource Include="CloudExplorerSources\PubSub\Resources\pubsub.png" />
-    <Resource Include="CloudExplorerSources\PubSub\Resources\hint.png" />
     <Content Include="License.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -355,6 +358,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="CloudExplorerSources\PubSub\Windows\CreateEditSubscriptionDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="CloudExplorerSources\PubSub\Windows\Styles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
