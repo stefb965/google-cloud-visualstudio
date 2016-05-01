@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Windows"
              xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
-             xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Common"
              xmlns:utils="clr-namespace:GoogleCloudExtension.Utils;assembly=GoogleCloudExtension.Utils"
              xmlns:controls="clr-namespace:GoogleCloudExtension.Controls"
              WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
@@ -20,6 +19,9 @@
                 <ResourceDictionary Source="Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <utils:BooleanConverter x:Key="BooleanConverter" TrueValue="False" FalseValue="True"/>
+            <Style TargetType="controls:HintedLabel">
+                <Setter Property="Margin" Value="0,6,0,6"/>
+            </Style>
         </ResourceDictionary>
     </ui:DialogWindow.Resources>
     <Grid x:Name="RootGrid" IsEnabled="{Binding Loading, Converter={StaticResource BooleanConverter}}">
@@ -33,13 +35,12 @@
             <StackPanel Margin="20">
                 <TextBlock Text="A topic forwards messages from publishers to subscribers"
                            TextWrapping="Wrap"/>
-                <controls:HintedLabel Margin="0,6,0,6" Text="Name:"
-                                      Hint="{Binding TopicHintText}"/>
-                <common:PrefixedTextBox FontSize="14"
-                                           MaxLength="10" x:Name="TopicName"
+                <controls:HintedLabel Text="Name:" Hint="{Binding TopicHintText}"/>
+                <controls:PrefixedTextBox FontSize="14"
+                                           MaxLength="255" x:Name="TopicName"
                                            Prefix="{Binding TopicNamePrefix, Mode=OneTime}"
                                            UnprefixedText="{Binding TopicName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}">
-                </common:PrefixedTextBox>
+                </controls:PrefixedTextBox>
             </StackPanel>
         </Grid>
         <Grid Background="{StaticResource PanelBackgroundBrush}"

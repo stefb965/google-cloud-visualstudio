@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Windows"
              xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
-             xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Common"
              xmlns:utils="clr-namespace:GoogleCloudExtension.Utils;assembly=GoogleCloudExtension.Utils"
              xmlns:controls="clr-namespace:GoogleCloudExtension.Controls"
              WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
@@ -20,6 +19,9 @@
                 <ResourceDictionary Source="Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <utils:BooleanConverter x:Key="BooleanConverter" TrueValue="False" FalseValue="True"/>
+            <Style TargetType="controls:HintedLabel">
+                <Setter Property="Margin" Value="0,6,0,6"/>
+            </Style>
         </ResourceDictionary>
     </ui:DialogWindow.Resources>
     <Grid x:Name="RootGrid" IsEnabled="{Binding Loading, Converter={StaticResource BooleanConverter}}">
@@ -35,29 +37,24 @@
                        TextWrapping="Wrap" />
                 <StackPanel>
                     <Label Content="Topic:"/>
-                    <common:PrefixedTextBox FontSize="14" Margin="4,0,4,0"
-                                           AcceptsReturn="False"
+                    <controls:PrefixedTextBox FontSize="14" Margin="4,0,4,0"
                                            MaxLength="255" IsReadOnly="True"
                                            IsEnabled="False"
                                            Prefix="{Binding TopicNamePrefix, Mode=OneTime}"
                                            UnprefixedText="{Binding TopicName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}">
-                    </common:PrefixedTextBox>
-                    <controls:HintedLabel Margin="0,6,0,6" Text="Subscription name:"
-                                      Hint="{Binding TopicHintText}"/>
-                    <common:PrefixedTextBox FontSize="14" Margin="4,0,4,0"
-                                           AcceptsReturn="False"
+                    </controls:PrefixedTextBox>
+                    <controls:HintedLabel Text="Subscription name:" Hint="{Binding TopicHintText}"/>
+                    <controls:PrefixedTextBox FontSize="14" Margin="4,0,4,0"
                                            MaxLength="255" x:Name="SubscriptionName"
                                            Prefix="{Binding TopicNamePrefix, Mode=OneTime}"
                                            UnprefixedText="{Binding TopicName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}">
-                    </common:PrefixedTextBox>
-                    <controls:HintedLabel Margin="0,6,0,6" Text="Delivery Type:"
-                                      Hint="{Binding TopicHintText}"/>
+                    </controls:PrefixedTextBox>
+                    <controls:HintedLabel Text="Delivery Type:" Hint="{Binding TopicHintText}"/>
                     <StackPanel>
                         <RadioButton Content="Pull"/>
                         <RadioButton Content="Push into an endpoint url"/>
                     </StackPanel>
-                    <controls:HintedLabel Margin="0,6,0,6" Text="Acknowledgment Deadline:"
-                                      Hint="{Binding TopicHintText}"/>
+                    <controls:HintedLabel Text="Acknowledgment Deadline:" Hint="{Binding TopicHintText}"/>
                     <controls:NumericTextBox FontSize="14" Margin="4,0,4,0"
                                              MaxLength="10"/>
                 </StackPanel>

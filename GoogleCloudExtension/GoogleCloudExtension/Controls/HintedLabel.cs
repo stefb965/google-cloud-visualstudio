@@ -1,9 +1,12 @@
-﻿using System.Windows;
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
+// Licensed under the Apache License Version 2.0.
+
+using System.Windows;
 using System.Windows.Controls;
 
 namespace GoogleCloudExtension.Controls
 {
-    public class HintedLabel : Control
+    internal class HintedLabel : Control
     {
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
         nameof(Text), typeof(string), typeof(HintedLabel));

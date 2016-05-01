@@ -1,10 +1,13 @@
-﻿using System.Windows;
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
+// Licensed under the Apache License Version 2.0.
+
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace GoogleCloudExtension.Controls
 {
-    public class NumericTextBox : TextBox
+    internal class NumericTextBox : TextBox
     {
         static NumericTextBox()
         {

@@ -9,7 +9,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
+namespace GoogleCloudExtension.Controls
 {
     internal class PrefixedTextBox : RichTextBox
     {
@@ -45,6 +45,12 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
         {
             get { return (Brush)GetValue(PrefixForegroundProperty); }
             set { SetValue(PrefixForegroundProperty, value); }
+        }
+
+        static PrefixedTextBox()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(PrefixedTextBox),
+                new FrameworkPropertyMetadata(typeof(PrefixedTextBox)));
         }
 
         public PrefixedTextBox()
