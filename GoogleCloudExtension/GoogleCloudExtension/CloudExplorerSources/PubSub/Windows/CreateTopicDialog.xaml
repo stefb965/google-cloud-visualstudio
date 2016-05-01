@@ -7,6 +7,7 @@
              xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
              xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Common"
              xmlns:utils="clr-namespace:GoogleCloudExtension.Utils;assembly=GoogleCloudExtension.Utils"
+             xmlns:controls="clr-namespace:GoogleCloudExtension.Controls"
              WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
              mc:Ignorable="d" Width="480" Height="210"
              d:DataContext="{d:DesignInstance {x:Type local:CreateTopicViewModel}}"
@@ -30,29 +31,16 @@
         <Grid Background="{StaticResource ContentBackgroundBrush}"
               Grid.Row="0">
             <StackPanel Margin="20">
-                <Label Content="A topic forwards messages from publishers to subscribers"/>
-                <StackPanel>
-                    <Label>
-                        <Label.Content>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Name:" VerticalAlignment="Center"/>
-                                <Border VerticalAlignment="Center" Margin="5,0,0,0">
-                                    <ContentControl Style="{StaticResource HintIcon}"/>
-                                    <Border.ToolTip>
-                                        <ToolTip Width="250" Content="{Binding TopicHintText, Mode=OneTime}"/>
-                                    </Border.ToolTip>
-                                </Border>
-                            </StackPanel>
-                        </Label.Content>
-                    </Label>
-                    <common:PrefixedTextBox FontSize="14" Margin="4,0,4,0"
+                <TextBlock Text="A topic forwards messages from publishers to subscribers"
+                           TextWrapping="Wrap"/>
+                <controls:HintedLabel Margin="0,6,0,6" Text="Name:"
+                                      Hint="{Binding TopicHintText}"/>
+                <common:PrefixedTextBox FontSize="14"
                                            AcceptsReturn="False"
                                            MaxLength="255" x:Name="TopicName"
-                                           PrefixForeground="#757575"
                                            Prefix="{Binding TopicNamePrefix, Mode=OneTime}"
                                            UnprefixedText="{Binding TopicName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}">
-                    </common:PrefixedTextBox>
-                </StackPanel>
+                </common:PrefixedTextBox>
             </StackPanel>
         </Grid>
         <Grid Background="{StaticResource PanelBackgroundBrush}"

@@ -1,0 +1,43 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:GoogleCloudExtension.Controls"
+                    xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0">
+    <Style TargetType="ToolTip" x:Key="HintedLabelTooltip">
+        <Setter Property="Foreground" Value="{DynamicResource VsBrush.CommandBarTextActive}"/>
+        <Setter Property="Background" Value="{DynamicResource VsBrush.CommandBarMenuBackgroundGradientBegin}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource VsBrush.CommandBarMenuBorder}"/>
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <TextBlock TextWrapping="Wrap" Text="{Binding}" />
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="controls:HintedLabel">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:HintedLabel">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{TemplateBinding Text}" VerticalAlignment="Center"
+                               FontFamily="{DynamicResource VsFont.EnvironmentFontFamily}"
+                               Foreground="{DynamicResource {x:Static ui:EnvironmentColors.ToolWindowTextBrushKey}}"
+                               FontWeight="SemiBold"/>
+                        <Border VerticalAlignment="Center" Margin="5,0,0,0"
+                                Background="Transparent">
+                            <Viewbox Width="14" Height="14">
+                                <Path Data="F 1 M 6,0 C 2.686,0 0,2.686 0,6 0,9.314 2.686,12 6,12 9.314,12 12,9.314 12,6 12,2.686 9.313,0 6,0 L 6,0 Z M 5.99664,10.7141 C 5.70759,10.7141 5.48576,10.6335 5.33003,10.471 5.1743,10.3086 5.097,10.108 5.097,9.86715 5.097,9.74503 5.11717,9.63076 5.15638,9.52544 5.19559,9.42013 5.25385,9.32826 5.33003,9.24984 5.40622,9.17141 5.50033,9.10979 5.61236,9.0661 5.72439,9.02241 5.85211,9 5.99664,9 6.14116,9 6.26888,9.02241 6.38092,9.0661 6.49295,9.10979 6.58706,9.17141 6.66325,9.24984 6.73943,9.32826 6.79881,9.42013 6.84026,9.52544 6.88171,9.63076 6.903,9.74391 6.903,9.86715 6.903,10.108 6.82458,10.3097 6.66661,10.471 6.50864,10.6335 6.28569,10.7141 5.99664,10.7141 Z M 8.0685,5.631 C 7.9315,5.826 7.7755,6.013 7.5995,6.193 7.4235,6.373 7.2425,6.55 7.0545,6.726 6.8395,6.922 6.6965,7.065 6.6245,7.297 6.5525,7.529 6.5145,8.015 6.5105,8.015 L 5.1805,8.015 C 5.1805,8.015 5.1975,7.567 5.2305,7.362 5.2635,7.157 5.3175,7.005 5.3935,6.835 5.4695,6.665 5.5685,6.522 5.6895,6.369 5.8105,6.216 5.9595,6.063 6.1345,5.891 6.2675,5.762 6.3915,5.644 6.5065,5.529 6.6215,5.414 6.7235,5.298 6.8115,5.177 6.8995,5.056 6.9685,4.928 7.0195,4.791 7.0705,4.654 7.0955,4.502 7.0955,4.335 7.0955,3.968 7.0045,3.688 6.8235,3.494 6.6425,3.3 6.3755,3.205 6.0235,3.205 5.8825,3.205 5.2305,3.167 5.0005,3.657 4.9355,3.79 4.9045,4.015 4.9045,4.015 L 3.4805,4.015 C 3.4845,4.015 3.5515,3.447 3.6825,3.167 3.8135,2.887 3.9935,2.715 4.2215,2.526 4.4495,2.337 4.7175,2.224 5.0245,2.129 5.3315,2.034 5.6645,2 6.0235,2 6.4185,2 6.7695,2.058 7.0785,2.16 7.3875,2.262 7.6485,2.414 7.8635,2.609 8.0785,2.804 8.2415,3.045 8.3525,3.326 8.4635,3.607 8.5195,3.927 8.5195,4.282 8.5195,4.54 8.4785,4.781 8.3965,5.004 8.3145,5.227 8.2055,5.436 8.0685,5.631 Z" 
+                                Fill="#cccccc"/>
+                            </Viewbox>
+                            <Border.ToolTip>
+                                <ToolTip Width="250" Content="{TemplateBinding Hint}"
+                                         Style="{StaticResource HintedLabelTooltip}"/>
+                            </Border.ToolTip>
+                        </Border>
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

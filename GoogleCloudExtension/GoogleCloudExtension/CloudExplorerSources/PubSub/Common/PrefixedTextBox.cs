@@ -21,9 +21,11 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
             "UnprefixedText", typeof(string), typeof(PrefixedTextBox),
             new PropertyMetadata((obj, e) => (obj as PrefixedTextBox)?.UnprefixedTextUpdate((string)e.NewValue)));
 
-        private TextPointer _inputStartPointer;
+        public static readonly DependencyProperty PrefixForegroundProperty = DependencyProperty.Register(
+           "PrefixForeground", typeof(Brush), typeof(PrefixedTextBox),
+           new PropertyMetadata(new SolidColorBrush(Colors.White)));
 
-        public Brush PrefixForeground { get; set; }
+        private TextPointer _inputStartPointer;
 
         public int MaxLength { get; set; }
 
@@ -37,6 +39,12 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
         {
             get { return (string)GetValue(UnprefixedTextProperty); }
             set { SetValue(UnprefixedTextProperty, value); }
+        }
+
+        public Brush PrefixForeground
+        {
+            get { return (Brush)GetValue(PrefixForegroundProperty); }
+            set { SetValue(PrefixForegroundProperty, value); }
         }
 
         public PrefixedTextBox()

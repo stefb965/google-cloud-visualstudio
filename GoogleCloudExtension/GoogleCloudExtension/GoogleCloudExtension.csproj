@@ -66,6 +66,7 @@
     <Compile Include="CloudExplorerSources\Gcs\GcsSource.cs" />
     <Compile Include="CloudExplorerSources\Gcs\GcsSourceRootViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\Common\DataSourceManager.cs" />
+    <Compile Include="Controls\HintedLabel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\Common\ExtensionBrushes.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionItem.cs" />
@@ -385,6 +386,10 @@
     <Page Include="OauthLoginFlow\OauthLoginFlowWindowContent.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>

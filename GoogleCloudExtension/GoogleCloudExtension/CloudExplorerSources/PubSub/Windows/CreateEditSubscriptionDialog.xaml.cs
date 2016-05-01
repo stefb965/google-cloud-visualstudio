@@ -21,7 +21,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             _viewModel = new CreateEditSubscriptionViewModel(owner, this);
             DataContext = _viewModel;
 
-            _style = (Style)FindResource(VsResourceKeys.TextBoxStyleKey);
+            _style = (Style)FindResource(VsResourceKeys.LargeToolTipStyleKey);
 
         }
     }
