@@ -22,7 +22,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         private const string DeliveryTypeHint = "If Push, Pub/Sub delivers messages as soon as they are published. If Pull, subscribers must request delivery.";
         private const string PushEndpointUrlHint = "The URL of the service that receives push messages";
         private const string AcknowledgmentDeadlineHint = "How long Pub/Sub waits for the subscriber to acknowledge receipt before resending the message";
-        private const string AcknowledgmentDeadlineValueErrorMessage = "Acknowledgment Deadline must be between 0 and 600";
+        private const string AcknowledgmentDeadlineValueErrorMessage = "Acknowledgment Deadline must be between 0 and 600 seconds";
 
         private readonly ICloudExplorerSource _owner;
         private readonly DataSourceManager _dataManager;

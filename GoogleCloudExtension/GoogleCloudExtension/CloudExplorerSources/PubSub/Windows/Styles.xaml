@@ -26,9 +26,9 @@ xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Com
     </Style>
 
     <Style TargetType="TextBox">
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxText}}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorder}}"/>
-        <Setter Property="Background" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBackground}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxTextBrushKey}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBorderBrushKey}}"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBackgroundBrushKey}}"/>
 
         <Setter Property="Template">
             <Setter.Value>
@@ -43,10 +43,10 @@ xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Com
                             <Setter Property="Opacity" TargetName="border" Value="0.56"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorder}}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBorderBrushKey}}"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorderFocused}}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBorderFocusedBrushKey}}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -57,8 +57,8 @@ xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Com
     <Style TargetType="RadioButton">
         <Setter Property="FontFamily" Value="{DynamicResource VsFont.EnvironmentFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static ui:EnvironmentColors.ToolWindowTextBrushKey}}"/>
-        <Setter Property="Background" Value="{DynamicResource {x:Static common:ExtensionBrushes.CheckBoxBackground}}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static common:ExtensionBrushes.CheckBoxBorder}}"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static ui:CommonControlsColors.CheckBoxBackgroundBrushKey}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static ui:CommonControlsColors.CheckBoxBorderBrushKey}}"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="BorderThickness"  Value="2"/>
         <Setter Property="Template">
@@ -107,13 +107,13 @@ xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Com
                             <Setter Property="Padding" Value="4,-1,0,0"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" TargetName="radioButtonBorder" Value="{DynamicResourceExtension {x:StaticExtension common:ExtensionBrushes.CheckBoxBackgroundHover}}"/>
-                            <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{DynamicResource {x:Static common:ExtensionBrushes.CheckBoxBorderHover}}"/>
-                            <Setter Property="Fill" TargetName="optionMark" Value="{DynamicResourceExtension {x:StaticExtension common:ExtensionBrushes.CheckBoxBorderHover}}"/>
+                            <Setter Property="Background" TargetName="radioButtonBorder" Value="{DynamicResourceExtension {x:StaticExtension ui:CommonControlsColors.CheckBoxBackgroundHoverBrushKey}}"/>
+                            <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{DynamicResource {x:Static ui:CommonControlsColors.CheckBoxBorderHoverBrushKey}}"/>
+                            <Setter Property="Fill" TargetName="optionMark" Value="{DynamicResourceExtension {x:StaticExtension ui:CommonControlsColors.CheckBoxBorderHoverBrushKey}}"/>
                         </Trigger>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter Property="Background" TargetName="radioButtonBorder" Value="{DynamicResourceExtension {x:StaticExtension common:ExtensionBrushes.CheckBoxBackgroundHover}}"/>
-                            <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{DynamicResource {x:Static common:ExtensionBrushes.CheckBoxBorderHover}}"/>
+                            <Setter Property="Background" TargetName="radioButtonBorder" Value="{DynamicResourceExtension {x:StaticExtension ui:CommonControlsColors.CheckBoxBackgroundHoverBrushKey}}"/>
+                            <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{DynamicResource {x:Static ui:CommonControlsColors.CheckBoxBorderHoverBrushKey}}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" TargetName="templateRoot" Value="0.56"/>

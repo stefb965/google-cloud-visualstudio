@@ -65,9 +65,8 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 VerticalAlignment="Top"
                     DataContext="{Binding ElementName=AdornedPlaceholder}">
                 <Border.ToolTip>
-                    <ToolTip Background="#FFdc000c"
-                                     BorderBrush="#FFdc000c"
-                                     MaxWidth="400" MinHeight="40">
+                    <ToolTip Background="#FFdc000c" BorderBrush="#FFdc000c"
+                             MaxWidth="400" MinHeight="40">
                         <ItemsControl ItemsSource="{Binding Path=AdornedElement.(Validation.Errors)}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -95,9 +94,9 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     </ControlTemplate>
 
     <Style TargetType="controls:NumericTextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxText}}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorder}}"/>
-        <Setter Property="Background" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBackground}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxTextBrushKey}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBorderBrushKey}}"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBackgroundBrushKey}}"/>
         <Setter Property="Validation.ErrorTemplate" Value="{StaticResource TextBoxErrorTemplate}"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -112,10 +111,10 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                             <Setter Property="Opacity" TargetName="border" Value="0.56"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorder}}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBorderBrushKey}}"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorderFocused}}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBorderFocusedBrushKey}}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -129,10 +128,10 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     </Style>
 
     <Style TargetType="controls:PrefixedTextBox" BasedOn="{StaticResource {x:Type RichTextBox}}">
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxText}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxTextBrushKey}}"/>
         <Setter Property="PrefixForeground" Value="#757575"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorder}}"/>
-        <Setter Property="Background" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBackground}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBorderBrushKey}}"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBackgroundBrushKey}}"/>
         <Setter Property="Validation.ErrorTemplate" Value="{StaticResource TextBoxErrorTemplate}"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -147,10 +146,10 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                             <Setter Property="Opacity" TargetName="border" Value="0.56"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorder}}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBorderBrushKey}}"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorderFocused}}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBorderFocusedBrushKey}}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
