@@ -12,7 +12,7 @@
              d:DataContext="{d:DesignInstance {x:Type local:CreateEditSubscriptionViewModel}}"
              FocusManager.FocusedElement="{Binding ElementName=SubscriptionName}"
              d:DesignWidth="550" d:DesignHeight="440"
-             Title="Create a new subscription">
+             Title="{Binding DialogTitle}">
     <ui:DialogWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -39,10 +39,11 @@
 
                 <c:HintedLabel Text="Topic:"/>
                 <TextBox FontSize="14" IsReadOnly="True"
+                IsEnabled="{Binding IsCreateMode}"
                 Text="{Binding Topic.Name, Mode=OneWay, ValidatesOnNotifyDataErrors=True}"/>
 
                 <c:HintedLabel Text="Subscription name:" Hint="{Binding SubscriptionHintText}"/>
-                <c:PrefixedTextBox FontSize="14"
+                <c:PrefixedTextBox FontSize="14" IsEnabled="{Binding IsCreateMode}"
                 MaxLength="255" x:Name="SubscriptionName"
                 Prefix="{Binding SubscriptionNamePrefix, Mode=OneTime}"
                 UnprefixedText="{Binding SubscriptionName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}"/>
@@ -69,8 +70,9 @@
                 <c:HintedLabel Text="Acknowledgment Deadline (seconds):" Hint="{Binding AcknowledgmentDeadlineHintText}"/>
                 <StackPanel Orientation="Horizontal">
                     <c:NumericTextBox FontSize="14" MaxLength="3" Width="140"
-                        Text="{Binding AcknowledgmentDeadline, Mode=TwoWay, ValidatesOnNotifyDataErrors=True,
-                        UpdateSourceTrigger=PropertyChanged}"/>
+                        Text="{Binding AckDeadlineSeconds, Mode=TwoWay, ValidatesOnNotifyDataErrors=True,
+                        UpdateSourceTrigger=PropertyChanged}"
+                        IsEnabled="{Binding IsCreateMode}"/>
                     <c:HintedLabel Text="(600 maximum)" Margin="6,0,0,0"/>
                 </StackPanel>
             </StackPanel>
@@ -80,7 +82,7 @@
             <ProgressBar IsIndeterminate="{Binding Loading}" VerticalAlignment="Top" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                         Margin="0,15,14,4">
-                <ui:DialogButton Content="Create" IsDefault="True"
+                <ui:DialogButton Content="{Binding OkButtonText}" IsDefault="True"
                                  Command="{Binding CreateTopicCommand}"/>
                 <ui:DialogButton Content="Cancel" IsCancel="True"/>
             </StackPanel>

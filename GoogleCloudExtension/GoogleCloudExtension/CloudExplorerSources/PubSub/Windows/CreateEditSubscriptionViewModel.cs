@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Google;
 using Google.Apis.Pubsub.v1.Data;
 using GoogleCloudExtension.CloudExplorer;
@@ -23,11 +24,15 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         private readonly ICloudExplorerSource _owner;
         private readonly DataSourceManager _dataManager;
         private readonly DialogWindow _window;
+        private readonly Subscription _subscription;
+
         private bool _validateOnChange;
+        private string _dialogTitle;
+        private string _okButtonText;
         private string _subscriptionName = string.Empty;
         private bool _isPull = true;
         private string _pushEndpointUrl = string.Empty;
-        private int _acknowledgmentDeadline = 10;
+        private int _ackDeadlineSeconds = 10;
 
         public string SubscriptionHintText => SubscriptionNameHint;
         public string DeliveryTypeHintText => DeliveryTypeHint;
@@ -37,6 +42,33 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         public Topic Topic { get; }
 
         public WeakCommand CreateTopicCommand { get; }
+
+        public bool IsCreateMode => _subscription == null;
+        public bool IsEditMode => _subscription != null;
+
+        public string DialogTitle
+        {
+            get
+            {
+                return _dialogTitle;
+            }
+            set
+            {
+                SetValueAndRaise(ref _dialogTitle, value);
+            }
+        }
+
+        public string OkButtonText
+        {
+            get
+            {
+                return _okButtonText;
+            }
+            set
+            {
+                SetValueAndRaise(ref _okButtonText, value);
+            }
+        }
 
         [MinLength(3)]
         [MaxLength(255)]
@@ -95,31 +127,54 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         }
 
         [Range(0, 600)]
-        public int AcknowledgmentDeadline
+        public int AckDeadlineSeconds
         {
             get
             {
-                return _acknowledgmentDeadline;
+                return _ackDeadlineSeconds;
             }
             set
             {
-                SetValueAndRaise(ref _acknowledgmentDeadline, value);
+                SetValueAndRaise(ref _ackDeadlineSeconds, value);
 
                 if (_validateOnChange)
                 {
-                    ValidatePropertyAsync(_acknowledgmentDeadline);
+                    ValidatePropertyAsync(_ackDeadlineSeconds);
                 }
             }
         }
 
-        public CreateEditSubscriptionViewModel(ICloudExplorerSource owner, DialogWindow window, Topic topic)
+        public CreateEditSubscriptionViewModel(ICloudExplorerSource owner, DialogWindow window,
+            Topic topic, Subscription subscription)
         {
             _owner = owner;
             _window = window;
+            _subscription = subscription;
             Topic = topic;
+
+            InitSubscription();
 
             _dataManager = new DataSourceManager(owner);
             CreateTopicCommand = new WeakCommand(OnCreateTopic);
+        }
+
+        private void InitSubscription()
+        {
+            DialogTitle = _subscription == null
+                ? "Create a new subscription"
+                : "Edit subscription";
+
+            OkButtonText = _subscription == null
+                ? "Create"
+                : "Save";
+
+            if (_subscription != null)
+            {
+                SubscriptionName = _subscription.Name.Split(new[] { "/" }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                IsPull = string.IsNullOrWhiteSpace(_subscription?.PushConfig?.PushEndpoint);
+                PushEndpointUrl = _subscription?.PushConfig?.PushEndpoint;
+                AckDeadlineSeconds = _subscription.AckDeadlineSeconds ?? 0;
+            }
         }
 
         protected override void OnValidationFinished(bool hasErrors)
@@ -145,13 +200,33 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 
             try
             {
-                GcpOutputWindow.OutputLine($"Creating subscription \"{subscriptionFullName}\"");
-                await _dataManager.PubSubDataSource.CreateSubscriptionAsync(Topic.Name, subscriptionFullName,
-                    PushEndpointUrl, AcknowledgmentDeadline);
-                GcpOutputWindow.OutputLine($"Subscription \"{subscriptionFullName}\" has been created");
+                if (_subscription == null)
+                {
+                    GcpOutputWindow.OutputLine($"Creating subscription \"{subscriptionFullName}\"");
+                    await _dataManager.PubSubDataSource.CreateSubscriptionAsync(Topic.Name, subscriptionFullName,
+                        !IsPull ? PushEndpointUrl : null, AckDeadlineSeconds);
+                    GcpOutputWindow.OutputLine($"Subscription \"{subscriptionFullName}\" has been created");
 
-                _window.Close();
-                _owner.Refresh();
+                    _window.Close();
+                    _owner.Refresh();
+                }
+                else
+                {
+
+                    var hasOldPushConfig = !string.IsNullOrWhiteSpace(_subscription?.PushConfig?.PushEndpoint);
+                    var hasPushConfig = !IsPull && !string.IsNullOrWhiteSpace(PushEndpointUrl);
+
+                    if (hasOldPushConfig != hasPushConfig ||
+                        (hasOldPushConfig && _subscription?.PushConfig?.PushEndpoint != PushEndpointUrl))
+                    {
+                        GcpOutputWindow.OutputLine($"Modifying push config for subscription \"{subscriptionFullName}\"");
+                        await _dataManager.PubSubDataSource.ModifyPushConfig(subscriptionFullName, !IsPull ? PushEndpointUrl : null);
+                        GcpOutputWindow.OutputLine("Push config been modified");
+                        _owner.Refresh();
+                    }
+
+                    _window.Close();
+                }
             }
             catch (GoogleApiException ex)
             {

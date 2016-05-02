@@ -60,7 +60,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnNewSubscription()
         {
-            var dlg = new CreateEditSubscriptionDialog(_owner.Owner, _topic);
+            var dlg = new CreateEditSubscriptionDialog(_owner.Owner, _topic, null);
             dlg.ShowModal();
         }
 

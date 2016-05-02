@@ -120,6 +120,21 @@ namespace GoogleCloudExtension.DataSources
             await Service.Projects.Subscriptions.Create(subscription, subscriptionName).ExecuteAsync();
         }
 
+        public async Task ModifyPushConfig(string subscriptionName, string pushEndpointUrl)
+        {
+            var pushConfigReq = new ModifyPushConfigRequest();
+
+            if (!string.IsNullOrWhiteSpace(pushEndpointUrl))
+            {
+                pushConfigReq.PushConfig = new PushConfig
+                {
+                    PushEndpoint = pushEndpointUrl
+                };
+            }
+
+            await Service.Projects.Subscriptions.ModifyPushConfig(pushConfigReq, subscriptionName).ExecuteAsync();
+        }
+
         /// <summary>
         /// Deletes given topic.
         /// </summary>

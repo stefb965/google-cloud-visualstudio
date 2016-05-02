@@ -12,11 +12,11 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         private readonly CreateEditSubscriptionViewModel _viewModel;
         private Style _style;
 
-        public CreateEditSubscriptionDialog(ICloudExplorerSource owner, Topic topic)
+        public CreateEditSubscriptionDialog(ICloudExplorerSource owner, Topic topic, Subscription subscription)
         {
             InitializeComponent();
 
-            _viewModel = new CreateEditSubscriptionViewModel(owner, this, topic);
+            _viewModel = new CreateEditSubscriptionViewModel(owner, this, topic, subscription);
             DataContext = _viewModel;
 
             //_style = (Style)FindResource(VsResourceKeys.CheckBoxStyleKey);

@@ -23,6 +23,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private readonly PubSubSourceRootViewModel _owner;
         private readonly Topic _topic;
+        private readonly Subscription _subscription;
         private readonly Lazy<SubscriptionItem> _item;
 
         public object Item => _item.Value;
@@ -34,6 +35,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         {
             _owner = owner;
             _topic = topic;
+            _subscription = subscription;
             _item = new Lazy<SubscriptionItem>(() => new SubscriptionItem(subscription));
 
             Content = _item.Value.Name;
@@ -53,7 +55,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnEditSubscription()
         {
-            var dlg = new CreateEditSubscriptionDialog(_owner.Owner, _topic);
+            var dlg = new CreateEditSubscriptionDialog(_owner.Owner, _topic, _subscription);
             dlg.ShowModal();
         }
 
