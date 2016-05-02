@@ -17,9 +17,12 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
     {
         private const string SubscriptionNameRegex = "^(?!(?i)goog(?-i))[a-zA-Z]+[a-zA-Z0-9\\.\\-_~%+]*$";
         private const string SubscriptionNameHint = "Must be 3-255 characters, start with an alphanumeric character, and contain only the following characters: letters, numbers, dashes (-), periods (.), underscores (_), tildes (~), percents (%) or plus signs (+). Cannot start with goog.";
+        private const string SubscriptionNameRegexErrorMessage = "Name must start with an alphanumeric character, and contain only the following characters: letters, numbers, dashes (-), periods (.), underscores (_), tildes (~), percents (%) or plus signs (+). Cannot start with goog.";
+        private const string SubscriptionNameLengthErrorMessage = "Name must be between 3 and 255 characters";
         private const string DeliveryTypeHint = "If Push, Pub/Sub delivers messages as soon as they are published. If Pull, subscribers must request delivery.";
         private const string PushEndpointUrlHint = "The URL of the service that receives push messages";
         private const string AcknowledgmentDeadlineHint = "How long Pub/Sub waits for the subscriber to acknowledge receipt before resending the message";
+        private const string AcknowledgmentDeadlineValueErrorMessage = "Acknowledgment Deadline must be between 0 and 600";
 
         private readonly ICloudExplorerSource _owner;
         private readonly DataSourceManager _dataManager;
@@ -70,9 +73,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             }
         }
 
-        [MinLength(3)]
-        [MaxLength(255)]
-        [RegularExpression(SubscriptionNameRegex)]
+        [MinLength(3, ErrorMessage = SubscriptionNameLengthErrorMessage)]
+        [MaxLength(255, ErrorMessage = SubscriptionNameLengthErrorMessage)]
+        [RegularExpression(SubscriptionNameRegex, ErrorMessage = SubscriptionNameRegexErrorMessage)]
         public string SubscriptionName
         {
             get
@@ -90,7 +93,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             }
         }
 
-        [MaxLength(4096)]
         public string PushEndpointUrl
         {
             get
@@ -126,7 +128,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             }
         }
 
-        [Range(0, 600)]
+        [Range(0, 600, ErrorMessage = AcknowledgmentDeadlineValueErrorMessage)]
         public int AckDeadlineSeconds
         {
             get

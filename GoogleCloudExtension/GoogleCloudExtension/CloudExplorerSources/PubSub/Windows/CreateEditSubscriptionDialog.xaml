@@ -70,7 +70,8 @@
                 <c:HintedLabel Text="Acknowledgment Deadline (seconds):" Hint="{Binding AcknowledgmentDeadlineHintText}"/>
                 <StackPanel Orientation="Horizontal">
                     <c:NumericTextBox FontSize="14" MaxLength="3" Width="140"
-                        Text="{Binding AckDeadlineSeconds, Mode=TwoWay, ValidatesOnNotifyDataErrors=True,
+                        Text="{Binding AckDeadlineSeconds, Mode=TwoWay, 
+                        ValidatesOnNotifyDataErrors=True,
                         UpdateSourceTrigger=PropertyChanged}"
                         IsEnabled="{Binding IsCreateMode}"/>
                     <c:HintedLabel Text="(600 maximum)" Margin="6,0,0,0"/>

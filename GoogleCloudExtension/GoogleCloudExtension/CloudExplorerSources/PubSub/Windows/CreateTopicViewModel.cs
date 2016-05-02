@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Windows.Media;
 using Google;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Common;
@@ -15,6 +14,8 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
     public class CreateTopicViewModel : DataViewModelBase
     {
         private const string TopicNameRegex = "^(?!(?i)goog(?-i))[a-zA-Z]+[a-zA-Z0-9\\.\\-_~%+]*$";
+        private const string TopicNameRegexErrorMessage = "Name must start with an alphanumeric character, and contain only the following characters: letters, numbers, dashes (-), periods (.), underscores (_), tildes (~), percents (%) or plus signs (+). Cannot start with goog.";
+        private const string TopicNameLengthErrorMessage = "Name must be between 3 and 255 characters";
         private const string TopicHint = "Must be 3-255 characters, start with an alphanumeric character, and contain only the following characters: letters, numbers, dashes (-), periods (.), underscores (_), tildes (~), percents (%) or plus signs (+). Cannot start with goog.";
 
         private bool _validateOnChange;
@@ -29,9 +30,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 
         public WeakCommand CreateTopicCommand { get; }
 
-        [MinLength(3)]
-        [MaxLength(255)]
-        [RegularExpression(TopicNameRegex)]
+        [MinLength(3, ErrorMessage = TopicNameLengthErrorMessage)]
+        [MaxLength(255, ErrorMessage = TopicNameLengthErrorMessage)]
+        [RegularExpression(TopicNameRegex, ErrorMessage = TopicNameRegexErrorMessage)]
         public string TopicName
         {
             get
