@@ -5,7 +5,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using Google;
 using GoogleCloudExtension.CloudExplorer;
-using GoogleCloudExtension.CloudExplorerSources.PubSub.Common;
 using GoogleCloudExtension.Utils;
 using Microsoft.VisualStudio.PlatformUI;
 
@@ -84,7 +83,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             try
             {
                 GcpOutputWindow.OutputLine($"Creating topic \"{topicFullName}\"");
-                await _dataManager.PubSubDataSource.CreateTopicAsync(topicFullName);
+                await _dataManager.PubSub.CreateTopicAsync(topicFullName);
                 GcpOutputWindow.OutputLine($"Topic \"{topicFullName}\" has been created");
 
                 _window.Close();

@@ -7,7 +7,6 @@ using System.Linq;
 using Google;
 using Google.Apis.Pubsub.v1.Data;
 using GoogleCloudExtension.CloudExplorer;
-using GoogleCloudExtension.CloudExplorerSources.PubSub.Common;
 using GoogleCloudExtension.Utils;
 using Microsoft.VisualStudio.PlatformUI;
 
@@ -205,7 +204,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
                 if (_subscription == null)
                 {
                     GcpOutputWindow.OutputLine($"Creating subscription \"{subscriptionFullName}\"");
-                    await _dataManager.PubSubDataSource.CreateSubscriptionAsync(Topic.Name, subscriptionFullName,
+                    await _dataManager.PubSub.CreateSubscriptionAsync(Topic.Name, subscriptionFullName,
                         !IsPull ? PushEndpointUrl : null, AckDeadlineSeconds);
                     GcpOutputWindow.OutputLine($"Subscription \"{subscriptionFullName}\" has been created");
 
@@ -222,7 +221,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
                         (hasOldPushConfig && _subscription?.PushConfig?.PushEndpoint != PushEndpointUrl))
                     {
                         GcpOutputWindow.OutputLine($"Modifying push config for subscription \"{subscriptionFullName}\"");
-                        await _dataManager.PubSubDataSource.ModifyPushConfig(subscriptionFullName, !IsPull ? PushEndpointUrl : null);
+                        await _dataManager.PubSub.ModifyPushConfig(subscriptionFullName, !IsPull ? PushEndpointUrl : null);
                         GcpOutputWindow.OutputLine("Push config been modified");
                         _owner.Refresh();
                     }

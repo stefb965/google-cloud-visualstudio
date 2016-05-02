@@ -6,7 +6,7 @@ using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.DataSources;
 
-namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
+namespace GoogleCloudExtension.Utils
 {
     public class DataSourceManager
     {
@@ -14,7 +14,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
 
         public ICloudExplorerSource Owner { get; }
 
-        public PubSubDataSource PubSubDataSource => _pubSubDataSource.Value;
+        public PubSubDataSource PubSub => _pubSubDataSource.Value;
 
         public DataSourceManager(ICloudExplorerSource owner)
         {
