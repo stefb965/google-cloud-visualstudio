@@ -2,7 +2,6 @@
 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="clr-namespace:GoogleCloudExtension.Controls"
                     xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
-                    xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Common"
                     xmlns:utils="clr-namespace:GoogleCloudExtension.Utils;assembly=GoogleCloudExtension.Utils">
     <Style TargetType="ToolTip" x:Key="HintedLabelTooltip">
         <Setter Property="Foreground" Value="{DynamicResource VsBrush.CommandBarTextActive}"/>

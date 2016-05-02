@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.PlatformUI;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 {
-    public class CreateTopicViewModel : DataViewModelBase
+    public class CreateTopicViewModel : ViewModelBase
     {
         private const string TopicNameRegex = "^(?!(?i)goog(?-i))[a-zA-Z]+[a-zA-Z0-9\\.\\-_~%+]*$";
         private const string TopicNameRegexErrorMessage = "Name must start with an alphanumeric character, and contain only the following characters: letters, numbers, dashes (-), periods (.), underscores (_), tildes (~), percents (%) or plus signs (+). Cannot start with goog.";

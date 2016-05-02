@@ -1,7 +1,4 @@
-﻿// Copyright 2016 Google Inc. All Rights Reserved.
-// Licensed under the Apache License Version 2.0.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,11 +7,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using GoogleCloudExtension.Utils;
 
-namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Common
+namespace GoogleCloudExtension.Utils
 {
-    public class DataViewModelBase : ViewModelBase, INotifyDataErrorInfo
+    public partial class ViewModelBase : INotifyDataErrorInfo
     {
         private readonly object _lockObj = new object();
         private readonly ConcurrentDictionary<string, List<string>> _errors =
