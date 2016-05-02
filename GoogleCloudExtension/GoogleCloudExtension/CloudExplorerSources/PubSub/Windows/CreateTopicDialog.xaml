@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Windows"
              xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
              xmlns:utils="clr-namespace:GoogleCloudExtension.Utils;assembly=GoogleCloudExtension.Utils"
-             xmlns:controls="clr-namespace:GoogleCloudExtension.Controls"
+             xmlns:c="clr-namespace:GoogleCloudExtension.Controls"
              WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
              mc:Ignorable="d" Width="480" Height="210"
              d:DataContext="{d:DesignInstance {x:Type local:CreateTopicViewModel}}"
@@ -19,7 +19,7 @@
                 <ResourceDictionary Source="Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <utils:BooleanConverter x:Key="BooleanConverter" TrueValue="False" FalseValue="True"/>
-            <Style TargetType="controls:HintedLabel">
+            <Style TargetType="c:HintedLabel">
                 <Setter Property="Margin" Value="0,6,0,6"/>
             </Style>
         </ResourceDictionary>
@@ -35,12 +35,11 @@
             <StackPanel Margin="20">
                 <TextBlock Text="A topic forwards messages from publishers to subscribers"
                            TextWrapping="Wrap"/>
-                <controls:HintedLabel Text="Name:" Hint="{Binding TopicHintText}"/>
-                <controls:PrefixedTextBox FontSize="14"
-                                           MaxLength="255" x:Name="TopicName"
-                                           Prefix="{Binding TopicNamePrefix, Mode=OneTime}"
-                                           UnprefixedText="{Binding TopicName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}">
-                </controls:PrefixedTextBox>
+                <c:HintedLabel Text="Name:" Hint="{Binding TopicHintText}"/>
+                <c:PrefixedTextBox FontSize="14"
+                MaxLength="255" x:Name="TopicName"
+                Prefix="{Binding TopicNamePrefix, Mode=OneTime}"
+                UnprefixedText="{Binding TopicName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}"/>
             </StackPanel>
         </Grid>
         <Grid Background="{StaticResource PanelBackgroundBrush}"
