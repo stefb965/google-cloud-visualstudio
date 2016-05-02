@@ -22,6 +22,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         private static readonly Lazy<ImageSource> s_topicIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconResourcePath));
 
         private readonly PubSubSourceRootViewModel _owner;
+        private readonly Topic _topic;
         private readonly Lazy<TopicItem> _item;
         private readonly List<SubscriptionViewModel> _subscriptions;
 
@@ -33,12 +34,13 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         public TopicViewModel(PubSubSourceRootViewModel owner, Topic topic, IEnumerable<Subscription> subscriptions)
         {
             _owner = owner;
+            _topic = topic;
             _item = new Lazy<TopicItem>(() => new TopicItem(topic));
 
             Content = _item.Value.Name;
             Icon = s_topicIcon.Value;
 
-            _subscriptions = subscriptions.Select(x => new SubscriptionViewModel(owner, x)).ToList();
+            _subscriptions = subscriptions.Select(x => new SubscriptionViewModel(owner, topic, x)).ToList();
 
             foreach (var viewModel in _subscriptions)
             {
@@ -58,7 +60,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnNewSubscription()
         {
-            var dlg = new CreateEditSubscriptionDialog(_owner.Owner);
+            var dlg = new CreateEditSubscriptionDialog(_owner.Owner, _topic);
             dlg.ShowModal();
         }
 

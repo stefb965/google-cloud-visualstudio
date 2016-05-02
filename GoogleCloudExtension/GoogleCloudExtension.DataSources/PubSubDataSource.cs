@@ -93,6 +93,34 @@ namespace GoogleCloudExtension.DataSources
         }
 
         /// <summary>
+        /// Creates new subscription
+        /// </summary>
+        /// <param name="topicName">The name of the topic with which new subscription will be associated.</param>
+        /// <param name="subscriptionName">The name of the subscription to be created.</param>
+        /// <param name="pushEndpointUrl">Url of push endpoint.</param>
+        /// <param name="ackDeadlineSeconds">Acknowledgment deadline in seconds.</param>
+        /// <returns></returns>
+        public async Task CreateSubscriptionAsync(string topicName, string subscriptionName,
+            string pushEndpointUrl, int ackDeadlineSeconds)
+        {
+            var subscription = new Subscription
+            {
+                Topic = topicName,
+                AckDeadlineSeconds = ackDeadlineSeconds
+            };
+
+            if (!string.IsNullOrWhiteSpace(pushEndpointUrl))
+            {
+                subscription.PushConfig = new PushConfig
+                {
+                    PushEndpoint = pushEndpointUrl
+                };
+            }
+
+            await Service.Projects.Subscriptions.Create(subscription, subscriptionName).ExecuteAsync();
+        }
+
+        /// <summary>
         /// Deletes given topic.
         /// </summary>
         /// <param name="topicId">The id of the topic to be deleted.</param>

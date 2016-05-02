@@ -6,14 +6,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Markup;
 
 namespace GoogleCloudExtension.Utils
 {
     /// <summary>
     /// General boolean converter, converting True or False to the desired values.
-    /// Note: Only Convert is implemented, so this is not a bidirectional converter, do not use on TwoWay bindings.
     /// </summary>
-    public class BooleanConverter : IValueConverter
+    public class BooleanConverter : MarkupExtension, IValueConverter
     {
         public object TrueValue { get; set; }
         public object FalseValue { get; set; }
@@ -24,13 +24,27 @@ namespace GoogleCloudExtension.Utils
             {
                 return (bool)value ? TrueValue : FalseValue;
             }
+
             Debug.WriteLine($"Value should be boolean: {value}");
             return DependencyProperty.UnsetValue;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            if (value is bool)
+            {
+                return (bool)value ? TrueValue : FalseValue;
+            }
+
+            Debug.WriteLine($"Value should be boolean: {value}");
+            return DependencyProperty.UnsetValue;
+        }
+
+        //MarkupExtension implementation allows to use converter
+        //directly in markup without creating static resource
+        public override object ProvideValue(IServiceProvider serviceProvider)
+        {
+            return this;
         }
     }
 }

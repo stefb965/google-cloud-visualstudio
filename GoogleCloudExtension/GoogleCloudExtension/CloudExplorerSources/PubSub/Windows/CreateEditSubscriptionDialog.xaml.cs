@@ -1,11 +1,9 @@
 ﻿// Copyright 2016 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
-using System;
 using System.Windows;
+using Google.Apis.Pubsub.v1.Data;
 using GoogleCloudExtension.CloudExplorer;
-using Microsoft.VisualStudio.PlatformUI;
-using Microsoft.VisualStudio.Shell;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 {
@@ -14,14 +12,14 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         private readonly CreateEditSubscriptionViewModel _viewModel;
         private Style _style;
 
-        public CreateEditSubscriptionDialog(ICloudExplorerSource owner)
+        public CreateEditSubscriptionDialog(ICloudExplorerSource owner, Topic topic)
         {
             InitializeComponent();
 
-            _viewModel = new CreateEditSubscriptionViewModel(owner, this);
+            _viewModel = new CreateEditSubscriptionViewModel(owner, this, topic);
             DataContext = _viewModel;
 
-            _style = (Style)FindResource(VsResourceKeys.CheckBoxStyleKey);
+            //_style = (Style)FindResource(VsResourceKeys.CheckBoxStyleKey);
 
         }
     }

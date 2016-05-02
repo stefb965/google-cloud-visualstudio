@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using Google;
+using Google.Apis.Pubsub.v1.Data;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Common;
 using GoogleCloudExtension.Utils;
@@ -13,48 +14,111 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 {
     public class CreateEditSubscriptionViewModel : DataViewModelBase
     {
-        private const string TopicNameRegex = "^(?!(?i)goog(?-i))[a-zA-Z]+[a-zA-Z0-9\\.\\-_~%+]*$";
-        private const string TopicHint = "Must be 3-255 characters, start with an alphanumeric character, and contain only the following characters: letters, numbers, dashes (-), periods (.), underscores (_), tildes (~), percents (%) or plus signs (+). Cannot start with goog.";
+        private const string SubscriptionNameRegex = "^(?!(?i)goog(?-i))[a-zA-Z]+[a-zA-Z0-9\\.\\-_~%+]*$";
+        private const string SubscriptionNameHint = "Must be 3-255 characters, start with an alphanumeric character, and contain only the following characters: letters, numbers, dashes (-), periods (.), underscores (_), tildes (~), percents (%) or plus signs (+). Cannot start with goog.";
+        private const string DeliveryTypeHint = "If Push, Pub/Sub delivers messages as soon as they are published. If Pull, subscribers must request delivery.";
+        private const string PushEndpointUrlHint = "The URL of the service that receives push messages";
+        private const string AcknowledgmentDeadlineHint = "How long Pub/Sub waits for the subscriber to acknowledge receipt before resending the message";
 
-        private bool _validateOnChange;
-        private string _topicName = string.Empty;
         private readonly ICloudExplorerSource _owner;
         private readonly DataSourceManager _dataManager;
         private readonly DialogWindow _window;
+        private bool _validateOnChange;
+        private string _subscriptionName = string.Empty;
+        private bool _isPull = true;
+        private string _pushEndpointUrl = string.Empty;
+        private int _acknowledgmentDeadline = 10;
 
-        public string TopicHintText => TopicHint;
-
-        public string TopicNamePrefix => $"projects/{_owner?.CurrentProject?.ProjectId}/topics/";
+        public string SubscriptionHintText => SubscriptionNameHint;
+        public string DeliveryTypeHintText => DeliveryTypeHint;
+        public string PushEndpointUrlHintText => PushEndpointUrlHint;
+        public string AcknowledgmentDeadlineHintText => AcknowledgmentDeadlineHint;
+        public string SubscriptionNamePrefix => $"projects/{_owner?.CurrentProject?.ProjectId}/subscriptions/";
+        public Topic Topic { get; }
 
         public WeakCommand CreateTopicCommand { get; }
 
         [MinLength(3)]
         [MaxLength(255)]
-        [RegularExpression(TopicNameRegex)]
-        public string TopicName
+        [RegularExpression(SubscriptionNameRegex)]
+        public string SubscriptionName
         {
             get
             {
-                return _topicName;
+                return _subscriptionName;
             }
             set
             {
-                SetValueAndRaise(ref _topicName, value);
+                SetValueAndRaise(ref _subscriptionName, value);
 
                 if (_validateOnChange)
                 {
-                    ValidatePropertyAsync(_topicName);
+                    ValidatePropertyAsync(_subscriptionName);
                 }
             }
         }
 
-        public CreateEditSubscriptionViewModel(ICloudExplorerSource owner, DialogWindow window)
+        [MaxLength(4096)]
+        public string PushEndpointUrl
+        {
+            get
+            {
+                return _pushEndpointUrl;
+            }
+            set
+            {
+                SetValueAndRaise(ref _pushEndpointUrl, value);
+
+                if (_validateOnChange)
+                {
+                    ValidatePropertyAsync(_pushEndpointUrl);
+                }
+            }
+        }
+
+
+        public bool IsPull
+        {
+            get
+            {
+                return _isPull;
+            }
+            set
+            {
+                SetValueAndRaise(ref _isPull, value);
+
+                if (_validateOnChange)
+                {
+                    ValidatePropertyAsync(_isPull);
+                }
+            }
+        }
+
+        [Range(0, 600)]
+        public int AcknowledgmentDeadline
+        {
+            get
+            {
+                return _acknowledgmentDeadline;
+            }
+            set
+            {
+                SetValueAndRaise(ref _acknowledgmentDeadline, value);
+
+                if (_validateOnChange)
+                {
+                    ValidatePropertyAsync(_acknowledgmentDeadline);
+                }
+            }
+        }
+
+        public CreateEditSubscriptionViewModel(ICloudExplorerSource owner, DialogWindow window, Topic topic)
         {
             _owner = owner;
             _window = window;
+            Topic = topic;
 
             _dataManager = new DataSourceManager(owner);
-
             CreateTopicCommand = new WeakCommand(OnCreateTopic);
         }
 
@@ -75,15 +139,16 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             if (HasErrors) return;
 
             Loading = true;
-            var topicFullName = TopicNamePrefix + TopicName;
+            var subscriptionFullName = SubscriptionNamePrefix + SubscriptionName;
 
             GcpOutputWindow.Activate();
 
             try
             {
-                GcpOutputWindow.OutputLine($"Creating topic \"{topicFullName}\"");
-                await _dataManager.PubSubDataSource.CreateTopicAsync(topicFullName);
-                GcpOutputWindow.OutputLine($"Topic \"{topicFullName}\" has been created");
+                GcpOutputWindow.OutputLine($"Creating subscription \"{subscriptionFullName}\"");
+                await _dataManager.PubSubDataSource.CreateSubscriptionAsync(Topic.Name, subscriptionFullName,
+                    PushEndpointUrl, AcknowledgmentDeadline);
+                GcpOutputWindow.OutputLine($"Subscription \"{subscriptionFullName}\" has been created");
 
                 _window.Close();
                 _owner.Refresh();

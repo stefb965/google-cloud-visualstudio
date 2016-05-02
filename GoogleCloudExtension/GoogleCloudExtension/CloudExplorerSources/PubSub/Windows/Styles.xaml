@@ -2,12 +2,11 @@
 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.14.0"
 xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.14.0"
-                    xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Common">
+xmlns:common="clr-namespace:GoogleCloudExtension.CloudExplorerSources.PubSub.Common">
     <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{DynamicResource {x:Static ui:EnvironmentColors.ToolWindowContentGridColorKey}}"/>
     <SolidColorBrush x:Key="ContentBackgroundBrush" Color="{DynamicResource {x:Static ui:EnvironmentColors.ToolWindowBackgroundColorKey}}"/>
 
     <Style BasedOn="{StaticResource {x:Static shell:VsResourceKeys.ButtonStyleKey}}" TargetType="Button"/>
-    <Style BasedOn="{StaticResource {x:Static shell:VsResourceKeys.TextBoxStyleKey}}" TargetType="TextBox"/>
     <Style BasedOn="{StaticResource {x:Static shell:VsResourceKeys.CheckBoxStyleKey}}" TargetType="CheckBox"/>
     <Style BasedOn="{StaticResource {x:Static shell:VsResourceKeys.ComboBoxStyleKey}}" TargetType="ComboBox" />
 
@@ -26,11 +25,42 @@ xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.Visua
         <Setter Property="Foreground" Value="{DynamicResource {x:Static ui:EnvironmentColors.ToolWindowTextBrushKey}}"/>
     </Style>
 
+    <Style TargetType="TextBox">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxText}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorder}}"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBackground}}"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" 
+                            Background="{TemplateBinding Background}" SnapsToDevicePixels="True"
+                            Padding="2">
+                        <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorder}}"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static common:ExtensionBrushes.TextBoxBorderFocused}}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="RadioButton">
         <Setter Property="FontFamily" Value="{DynamicResource VsFont.EnvironmentFontFamily}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static ui:EnvironmentColors.ToolWindowTextBrushKey}}"/>
         <Setter Property="Background" Value="{DynamicResource {x:Static common:ExtensionBrushes.CheckBoxBackground}}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static common:ExtensionBrushes.CheckBoxBorder}}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="BorderThickness"  Value="2"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type RadioButton}">
@@ -51,7 +81,11 @@ xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.Visua
                             </Grid>
                         </Border>
                         <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}" 
-                                          Content="{TemplateBinding Content}" Grid.Column="1" ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                          Content="{TemplateBinding Content}" Grid.Column="1" ContentStringFormat="{TemplateBinding ContentStringFormat}" 
+                                          Focusable="False" 
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" 
+                                          RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="HasContent" Value="True">

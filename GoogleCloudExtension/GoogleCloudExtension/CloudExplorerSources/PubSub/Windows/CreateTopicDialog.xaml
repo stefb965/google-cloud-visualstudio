@@ -8,10 +8,10 @@
              xmlns:utils="clr-namespace:GoogleCloudExtension.Utils;assembly=GoogleCloudExtension.Utils"
              xmlns:c="clr-namespace:GoogleCloudExtension.Controls"
              WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
-             mc:Ignorable="d" Width="480" Height="210"
+             mc:Ignorable="d" Width="550" Height="210"
              d:DataContext="{d:DesignInstance {x:Type local:CreateTopicViewModel}}"
              FocusManager.FocusedElement="{Binding ElementName=TopicName}"
-             d:DesignWidth="480" d:DesignHeight="210"
+             d:DesignWidth="550" d:DesignHeight="210"
              Title="Create a topic">
     <ui:DialogWindow.Resources>
         <ResourceDictionary>
@@ -20,7 +20,8 @@
             </ResourceDictionary.MergedDictionaries>
             <utils:BooleanConverter x:Key="BooleanConverter" TrueValue="False" FalseValue="True"/>
             <Style TargetType="c:HintedLabel">
-                <Setter Property="Margin" Value="0,6,0,6"/>
+                <Setter Property="Margin" Value="0,10,0,6"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
             </Style>
         </ResourceDictionary>
     </ui:DialogWindow.Resources>

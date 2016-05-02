@@ -8,10 +8,10 @@
              xmlns:utils="clr-namespace:GoogleCloudExtension.Utils;assembly=GoogleCloudExtension.Utils"
              xmlns:c="clr-namespace:GoogleCloudExtension.Controls"
              WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
-             mc:Ignorable="d" Width="480" Height="410"
-             d:DataContext="{d:DesignInstance {x:Type local:CreateTopicViewModel}}"
+             mc:Ignorable="d" Width="550" Height="440"
+             d:DataContext="{d:DesignInstance {x:Type local:CreateEditSubscriptionViewModel}}"
              FocusManager.FocusedElement="{Binding ElementName=SubscriptionName}"
-             d:DesignWidth="480" d:DesignHeight="410"
+             d:DesignWidth="550" d:DesignHeight="440"
              Title="Create a new subscription">
     <ui:DialogWindow.Resources>
         <ResourceDictionary>
@@ -20,7 +20,8 @@
             </ResourceDictionary.MergedDictionaries>
             <utils:BooleanConverter x:Key="BooleanConverter" TrueValue="False" FalseValue="True"/>
             <Style TargetType="c:HintedLabel">
-                <Setter Property="Margin" Value="0,6,0,6"/>
+                <Setter Property="Margin" Value="0,10,0,6"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
             </Style>
         </ResourceDictionary>
     </ui:DialogWindow.Resources>
@@ -37,26 +38,41 @@
                        TextWrapping="Wrap" />
 
                 <c:HintedLabel Text="Topic:"/>
-                <c:PrefixedTextBox FontSize="14"
-                MaxLength="255" IsReadOnly="True"
-                IsEnabled="False"
-                Prefix="{Binding TopicNamePrefix, Mode=OneTime}"
-                UnprefixedText="{Binding TopicName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}"/>
+                <TextBox FontSize="14" IsReadOnly="True"
+                Text="{Binding Topic.Name, Mode=OneWay, ValidatesOnNotifyDataErrors=True}"/>
 
-                <c:HintedLabel Text="Subscription name:" Hint="{Binding TopicHintText}"/>
+                <c:HintedLabel Text="Subscription name:" Hint="{Binding SubscriptionHintText}"/>
                 <c:PrefixedTextBox FontSize="14"
                 MaxLength="255" x:Name="SubscriptionName"
-                Prefix="{Binding TopicNamePrefix, Mode=OneTime}"
-                UnprefixedText="{Binding TopicName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}"/>
+                Prefix="{Binding SubscriptionNamePrefix, Mode=OneTime}"
+                UnprefixedText="{Binding SubscriptionName, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}"/>
 
-                <c:HintedLabel Text="Delivery Type:" Hint="{Binding TopicHintText}"/>
+                <c:HintedLabel Text="Delivery Type:" Hint="{Binding DeliveryTypeHintText}"/>
                 <StackPanel>
-                    <RadioButton Content="Pull" FontSize="14"/>
-                    <RadioButton Content="Push into an endpoint url" FontSize="14"/>
+                    <RadioButton IsChecked="{Binding IsPull, Mode=TwoWay}">
+                        <RadioButton.Content>
+                            <c:HintedLabel Text="Pull" Margin="0,4,0,4" />
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton IsChecked="{Binding IsPull, Mode=TwoWay, Converter={utils:BooleanConverter TrueValue=False,FalseValue=True}}">
+                        <RadioButton.Content>
+                            <c:HintedLabel Text="Push into an endpoint url" Margin="0,4,0,4" 
+                                           Hint="{Binding PushEndpointUrlHintText}"/>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <TextBox FontSize="14"
+                    Text="{Binding PushEndpointUrl, Mode=TwoWay, ValidatesOnNotifyDataErrors=True}"
+                    IsEnabled="{Binding IsPull, Mode=OneWay, Converter={utils:BooleanConverter TrueValue=False,FalseValue=True}}"
+                    Margin="23,0,0,0"/>
                 </StackPanel>
 
-                <c:HintedLabel Text="Acknowledgment Deadline:" Hint="{Binding TopicHintText}"/>
-                <c:NumericTextBox FontSize="14" MaxLength="10"/>
+                <c:HintedLabel Text="Acknowledgment Deadline (seconds):" Hint="{Binding AcknowledgmentDeadlineHintText}"/>
+                <StackPanel Orientation="Horizontal">
+                    <c:NumericTextBox FontSize="14" MaxLength="3" Width="140"
+                        Text="{Binding AcknowledgmentDeadline, Mode=TwoWay, ValidatesOnNotifyDataErrors=True,
+                        UpdateSourceTrigger=PropertyChanged}"/>
+                    <c:HintedLabel Text="(600 maximum)" Margin="6,0,0,0"/>
+                </StackPanel>
             </StackPanel>
         </Grid>
         <Grid Background="{StaticResource PanelBackgroundBrush}"
