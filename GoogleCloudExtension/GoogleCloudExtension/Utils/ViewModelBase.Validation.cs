@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 
 namespace GoogleCloudExtension.Utils
 {
+    /// <summary>
+    /// INotifyDataErrorInfo implementation is needed to support data validation in the UI
+    /// </summary>
     public partial class ViewModelBase : INotifyDataErrorInfo
     {
         private readonly object _lockObj = new object();

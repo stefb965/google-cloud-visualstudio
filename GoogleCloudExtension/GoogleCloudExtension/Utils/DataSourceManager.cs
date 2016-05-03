@@ -8,6 +8,9 @@ using GoogleCloudExtension.DataSources;
 
 namespace GoogleCloudExtension.Utils
 {
+    /// <summary>
+    /// This class provides access to all Data Sources
+    /// </summary>
     public class DataSourceManager
     {
         private Lazy<PubSubDataSource> _pubSubDataSource;
