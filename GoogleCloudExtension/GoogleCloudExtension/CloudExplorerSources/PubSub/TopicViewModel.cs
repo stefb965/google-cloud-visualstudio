@@ -104,15 +104,17 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             }
             catch (GoogleApiException ex)
             {
+                var msg = string.Join(Environment.NewLine,
+                    ex.Error.Errors.Select(c => c.Message));
+
                 GcpOutputWindow.OutputLine(ex.Message);
-                UserPromptUtils.ErrorPrompt(ex.Message, "Error");
+                UserPromptUtils.ErrorPrompt(msg, "Error");
             }
             catch (Exception ex)
             {
                 GcpOutputWindow.OutputLine(ex.Message);
                 UserPromptUtils.ErrorPrompt(ex.Message, "Error");
             }
-
         }
     }
 }
