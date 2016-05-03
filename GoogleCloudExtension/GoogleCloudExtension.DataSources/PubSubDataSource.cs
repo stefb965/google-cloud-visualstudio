@@ -1,7 +1,6 @@
 ﻿// Copyright 2016 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -21,7 +20,8 @@ namespace GoogleCloudExtension.DataSources
         /// </summary>
         /// <param name="projectId"></param>
         /// <param name="credential"></param>
-        public PubSubDataSource(string projectId, GoogleCredential credential) : base(projectId, () => CreateService(credential))
+        public PubSubDataSource(string projectId, GoogleCredential credential)
+            : base(projectId, () => CreateService(credential))
         { }
 
         private static PubsubService CreateService(GoogleCredential credential)
@@ -32,6 +32,7 @@ namespace GoogleCloudExtension.DataSources
             });
         }
 
+        #region Topics
         /// <summary>
         /// Fetches the list of topics for the given project.
         /// </summary>
@@ -40,7 +41,7 @@ namespace GoogleCloudExtension.DataSources
         {
             return LoadPagedListAsync(token =>
             {
-                if (String.IsNullOrEmpty(token))
+                if (string.IsNullOrEmpty(token))
                 {
                     Debug.WriteLine("Loading final page.");
                     return Service.Projects.Topics.List($"projects/{ProjectId}").ExecuteAsync();
@@ -58,6 +59,27 @@ namespace GoogleCloudExtension.DataSources
         }
 
         /// <summary>
+        /// Creates a new topic.
+        /// </summary>
+        /// <param name="topicName">The name of the topic to be created.</param>
+        public async Task CreateTopicAsync(string topicName)
+        {
+            var topic = new Topic();
+            await Service.Projects.Topics.Create(topic, topicName).ExecuteAsync();
+        }
+
+        /// <summary>
+        /// Deletes given topic.
+        /// </summary>
+        /// <param name="topicName">The name of the topic to be deleted.</param>
+        public async Task DeleteTopicAsync(string topicName)
+        {
+            await Service.Projects.Topics.Delete(topicName).ExecuteAsync();
+        }
+        #endregion
+
+        #region Subscriptions
+        /// <summary>
         /// Fetches the list of subscriptions for the given project.
         /// </summary>
         /// <returns>The list of subscriptions.</returns>
@@ -65,7 +87,7 @@ namespace GoogleCloudExtension.DataSources
         {
             return LoadPagedListAsync(token =>
             {
-                if (String.IsNullOrEmpty(token))
+                if (string.IsNullOrEmpty(token))
                 {
                     Debug.WriteLine("Loading final page.");
                     return Service.Projects.Subscriptions.List($"projects/{ProjectId}").ExecuteAsync();
@@ -83,23 +105,12 @@ namespace GoogleCloudExtension.DataSources
         }
 
         /// <summary>
-        /// Creates new topic.
-        /// </summary>
-        /// <param name="topicId">The id of the topic to be created.</param>
-        public async Task CreateTopicAsync(string topicId)
-        {
-            var topic = new Topic();
-            await Service.Projects.Topics.Create(topic, topicId).ExecuteAsync();
-        }
-
-        /// <summary>
-        /// Creates new subscription
+        /// Creates a new subscription
         /// </summary>
         /// <param name="topicName">The name of the topic with which new subscription will be associated.</param>
         /// <param name="subscriptionName">The name of the subscription to be created.</param>
         /// <param name="pushEndpointUrl">Url of push endpoint.</param>
         /// <param name="ackDeadlineSeconds">Acknowledgment deadline in seconds.</param>
-        /// <returns></returns>
         public async Task CreateSubscriptionAsync(string topicName, string subscriptionName,
             string pushEndpointUrl, int ackDeadlineSeconds)
         {
@@ -120,6 +131,14 @@ namespace GoogleCloudExtension.DataSources
             await Service.Projects.Subscriptions.Create(subscription, subscriptionName).ExecuteAsync();
         }
 
+        /// <summary>
+        /// Modifies push configuration of the existing subscription
+        /// </summary>
+        /// <param name="subscriptionName">The name of the subscription</param>
+        /// <param name="pushEndpointUrl">The url of the new push endpoint. 
+        /// If new endpoint url is <value>null</value> or white space than existing 
+        /// push endpoint will be cleared.
+        /// </param>
         public async Task ModifyPushConfig(string subscriptionName, string pushEndpointUrl)
         {
             var pushConfigReq = new ModifyPushConfigRequest();
@@ -136,21 +155,13 @@ namespace GoogleCloudExtension.DataSources
         }
 
         /// <summary>
-        /// Deletes given topic.
-        /// </summary>
-        /// <param name="topicId">The id of the topic to be deleted.</param>
-        public async Task DeleteTopicAsync(string topicId)
-        {
-            await Service.Projects.Topics.Delete(topicId).ExecuteAsync();
-        }
-
-        /// <summary>
         /// Deletes given subscription.
         /// </summary>
-        /// <param name="subscriptionId">The id of the subscription to be deleted.</param>
-        public async Task DeleteSubscriptionAsync(string subscriptionId)
+        /// <param name="subscriptionName">The id of the subscription to be deleted.</param>
+        public async Task DeleteSubscriptionAsync(string subscriptionName)
         {
-            await Service.Projects.Subscriptions.Delete(subscriptionId).ExecuteAsync();
+            await Service.Projects.Subscriptions.Delete(subscriptionName).ExecuteAsync();
         }
+        #endregion
     }
 }

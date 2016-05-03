@@ -1,4 +1,4 @@
-﻿// Copyright 2015 Google Inc. All Rights Reserved.
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
 using System;
@@ -48,8 +48,12 @@ namespace GoogleCloudExtension.Utils
             throw new NotImplementedException();
         }
 
-        //MarkupExtension implementation allows to use converter
-        //directly in markup without creating static resource
+        /// <summary>
+        /// Inheriting from the MarkupExtension class allows us to use converter
+        /// directly in markup without creating static resource for it.
+        /// ProvideValue returns this because our markup extension
+        /// is either implements IValueConverter interface.
+        /// </summary>
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
             return this;

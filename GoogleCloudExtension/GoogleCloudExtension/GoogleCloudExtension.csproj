@@ -69,8 +69,8 @@
     <Compile Include="Controls\HintedLabel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\SubscriptionItem.cs" />
-    <Compile Include="CloudExplorerSources\PubSub\ToolWindows\PullToolWindow.cs" />
-    <Compile Include="CloudExplorerSources\PubSub\ToolWindows\PublishToolWindow.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Windows\PullToolWindow.cs" />
+    <Compile Include="CloudExplorerSources\PubSub\Windows\PublishToolWindow.cs" />
     <Compile Include="CloudExplorerSources\PubSub\TopicItem.cs" />
     <Compile Include="CloudExplorerSources\PubSub\TopicViewModel.cs" />
     <Compile Include="CloudExplorerSources\PubSub\PubSubSourceRootViewModel.cs" />

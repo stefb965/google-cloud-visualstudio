@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using GoogleCloudExtension.CloudExplorerSources.PubSub.ToolWindows;
+using GoogleCloudExtension.CloudExplorerSources.PubSub.Windows;
 
 namespace GoogleCloudExtension
 {

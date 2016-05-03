@@ -75,7 +75,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             await ValidateAsync();
             if (HasErrors) return;
 
-            Loading = true;
+            IsLoading = true;
             var topicFullName = TopicNamePrefix + TopicName;
 
             GcpOutputWindow.Activate();
@@ -101,7 +101,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             }
             finally
             {
-                Loading = false;
+                IsLoading = false;
             }
         }
     }

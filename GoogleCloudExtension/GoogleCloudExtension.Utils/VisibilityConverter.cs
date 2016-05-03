@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Markup;
 
 namespace GoogleCloudExtension.Utils
 {
@@ -13,7 +14,7 @@ namespace GoogleCloudExtension.Utils
     /// Converts a boolean value into a Visibility enum value. True will mean Visible and False Collapsed.
     /// Note: Only Convert is implemented, so this is not a bidirectional converter, do not use on TwoWay bindings.
     /// </summary>
-    public class VisibilityConverter : IValueConverter
+    public class VisibilityConverter : MarkupExtension, IValueConverter
     {
         /// <summary>
         /// Determine if the value to convert should be negated before the conversion
@@ -52,6 +53,17 @@ namespace GoogleCloudExtension.Utils
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Inheriting from the MarkupExtension class allows us to use converter
+        /// directly in markup without creating static resource for it.
+        /// ProvideValue returns this because our markup extension
+        /// is either implements IValueConverter interface.
+        /// </summary>
+        public override object ProvideValue(IServiceProvider serviceProvider)
+        {
+            return this;
         }
     }
 }

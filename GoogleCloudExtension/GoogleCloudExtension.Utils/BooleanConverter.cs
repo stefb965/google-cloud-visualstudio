@@ -40,8 +40,12 @@ namespace GoogleCloudExtension.Utils
             return DependencyProperty.UnsetValue;
         }
 
-        //MarkupExtension implementation allows to use converter
-        //directly in markup without creating static resource
+        /// <summary>
+        /// Inheriting from the MarkupExtension class allows us to use converter
+        /// directly in markup without creating static resource for it.
+        /// ProvideValue returns this because our markup extension
+        /// is either implements IValueConverter interface.
+        /// </summary>
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
             return this;

@@ -9,7 +9,6 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Google.Apis.Pubsub.v1.Data;
 using GoogleCloudExtension.CloudExplorer;
-using GoogleCloudExtension.CloudExplorerSources.PubSub.ToolWindows;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Windows;
 using GoogleCloudExtension.Utils;
 using Microsoft.VisualStudio.Shell.Interop;

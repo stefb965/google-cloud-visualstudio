@@ -18,14 +18,14 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <utils:BooleanConverter x:Key="BooleanConverter" TrueValue="False" FalseValue="True"/>
             <Style TargetType="c:HintedLabel">
                 <Setter Property="Margin" Value="0,10,0,6"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
             </Style>
         </ResourceDictionary>
     </ui:DialogWindow.Resources>
-    <Grid x:Name="RootGrid" IsEnabled="{Binding Loading, Converter={StaticResource BooleanConverter}}">
+    <Grid IsEnabled="{Binding IsLoading, 
+        Converter={utils:BooleanConverter TrueValue=False, FalseValue=True}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto" />
@@ -80,7 +80,7 @@
         </Grid>
         <Grid Background="{StaticResource PanelBackgroundBrush}"
               Grid.Row="1">
-            <ProgressBar IsIndeterminate="{Binding Loading}" VerticalAlignment="Top" />
+            <ProgressBar IsIndeterminate="{Binding IsLoading}" VerticalAlignment="Top" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                         Margin="0,15,14,4">
                 <ui:DialogButton Content="{Binding OkButtonText}" IsDefault="True"

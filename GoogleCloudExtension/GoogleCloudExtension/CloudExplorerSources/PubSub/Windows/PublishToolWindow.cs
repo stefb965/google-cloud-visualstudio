@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Shell;
 
-namespace GoogleCloudExtension.CloudExplorerSources.PubSub.ToolWindows
+namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 {
     /// <summary>
     /// This class implements the tool window exposed by this package and hosts a user control.

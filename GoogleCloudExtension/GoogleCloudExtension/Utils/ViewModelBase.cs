@@ -11,13 +11,13 @@ namespace GoogleCloudExtension.Utils
     /// </summary>
     public partial class ViewModelBase : Model
     {
-        private bool _loading;
+        private bool _isLoading;
         private string _loadingMessage;
 
-        public bool Loading
+        public bool IsLoading
         {
-            get { return _loading; }
-            set { SetValueAndRaise(ref _loading, value); }
+            get { return _isLoading; }
+            set { SetValueAndRaise(ref _isLoading, value); }
         }
 
         public string LoadingMessage
