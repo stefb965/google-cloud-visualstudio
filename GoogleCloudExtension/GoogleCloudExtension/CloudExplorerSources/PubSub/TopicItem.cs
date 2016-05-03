@@ -8,7 +8,7 @@ using Google.Apis.Pubsub.v1.Data;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 {
-    public class TopicItem
+    internal class TopicItem
     {
         private const string Category = "Topic Properties";
 

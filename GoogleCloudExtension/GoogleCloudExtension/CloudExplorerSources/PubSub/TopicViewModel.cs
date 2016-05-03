@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Google;
 using Google.Apis.Pubsub.v1.Data;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Windows;
@@ -85,18 +86,33 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
             GcpOutputWindow.Activate();
 
-            foreach (var subscription in _subscriptions)
+            try
             {
-                GcpOutputWindow.OutputLine($"Deleting subscription \"{subscription.SubscriptionItem.FullName}\"");
-                await _owner.DataSource.DeleteSubscriptionAsync(subscription.SubscriptionItem.FullName);
-                GcpOutputWindow.OutputLine($"Subscription \"{subscription.SubscriptionItem.FullName}\" has been deleted");
+                foreach (var subscription in _subscriptions)
+                {
+                    GcpOutputWindow.OutputLine($"Deleting subscription \"{subscription.SubscriptionItem.FullName}\"");
+                    await _owner.DataManager.PubSub.DeleteSubscriptionAsync(subscription.SubscriptionItem.FullName);
+                    GcpOutputWindow.OutputLine(
+                        $"Subscription \"{subscription.SubscriptionItem.FullName}\" has been deleted");
+                }
+
+                GcpOutputWindow.OutputLine($"Deleting topic \"{_item.Value.FullName}\"");
+                await _owner.DataManager.PubSub.DeleteTopicAsync(_item.Value.FullName);
+                GcpOutputWindow.OutputLine($"Topic \"{_item.Value.FullName}\" has been deleted");
+
+                _owner.Owner.Refresh();
+            }
+            catch (GoogleApiException ex)
+            {
+                GcpOutputWindow.OutputLine(ex.Message);
+                UserPromptUtils.ErrorPrompt(ex.Message, "Error");
+            }
+            catch (Exception ex)
+            {
+                GcpOutputWindow.OutputLine(ex.Message);
+                UserPromptUtils.ErrorPrompt(ex.Message, "Error");
             }
 
-            GcpOutputWindow.OutputLine($"Deleting topic \"{_item.Value.FullName}\"");
-            await _owner.DataSource.DeleteTopicAsync(_item.Value.FullName);
-            GcpOutputWindow.OutputLine($"Topic \"{_item.Value.FullName}\" has been deleted");
-
-            _owner.Owner.Refresh();
         }
     }
 }

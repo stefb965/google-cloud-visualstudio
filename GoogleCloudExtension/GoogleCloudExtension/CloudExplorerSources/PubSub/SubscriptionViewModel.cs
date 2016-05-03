@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Google;
 using Google.Apis.Pubsub.v1.Data;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Windows;
@@ -85,12 +86,25 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             if (!UserPromptUtils.YesNoPrompt($"Do you want to delete the subscription \"{_item.Value.FullName}\"?",
                 "Confirm deletion")) return;
 
-            GcpOutputWindow.Activate();
-            GcpOutputWindow.OutputLine($"Deleting subscription \"{_item.Value.FullName}\"");
-            await _owner.DataSource.DeleteSubscriptionAsync(_item.Value.FullName);
-            GcpOutputWindow.OutputLine($"Subscription \"{_item.Value.FullName}\" has been deleted");
+            try
+            {
+                GcpOutputWindow.Activate();
+                GcpOutputWindow.OutputLine($"Deleting subscription \"{_item.Value.FullName}\"");
+                await _owner.DataManager.PubSub.DeleteSubscriptionAsync(_item.Value.FullName);
+                GcpOutputWindow.OutputLine($"Subscription \"{_item.Value.FullName}\" has been deleted");
 
-            _owner.Owner.Refresh();
+                _owner.Owner.Refresh();
+            }
+            catch (GoogleApiException ex)
+            {
+                GcpOutputWindow.OutputLine(ex.Message);
+                UserPromptUtils.ErrorPrompt(ex.Message, "Error");
+            }
+            catch (Exception ex)
+            {
+                GcpOutputWindow.OutputLine(ex.Message);
+                UserPromptUtils.ErrorPrompt(ex.Message, "Error");
+            }
         }
     }
 }

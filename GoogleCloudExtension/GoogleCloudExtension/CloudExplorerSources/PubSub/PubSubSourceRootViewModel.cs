@@ -10,7 +10,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Google.Apis.Pubsub.v1.Data;
-using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Windows;
 using GoogleCloudExtension.DataSources;
@@ -41,9 +40,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         private IList<Topic> _topics;
         private IList<Subscription> _subscriptions;
 
-        private Lazy<PubSubDataSource> _dataSource;
-
-        public PubSubDataSource DataSource => _dataSource.Value;
+        public DataSourceManager DataManager { get; private set; }
 
         public override ImageSource RootIcon => s_pubSubIcon.Value;
 
@@ -73,19 +70,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         public override void InvalidateCredentials()
         {
             Debug.WriteLine("New credentials, invalidating the PubSub source.");
-            _dataSource = new Lazy<PubSubDataSource>(CreateDataSource);
-        }
-
-        private PubSubDataSource CreateDataSource()
-        {
-            if (Owner.CurrentProject != null)
-            {
-                return new PubSubDataSource(Owner.CurrentProject.ProjectId, AccountsManager.CurrentGoogleCredential);
-            }
-            else
-            {
-                return null;
-            }
+            DataManager = new DataSourceManager(Owner);
         }
 
         private void OnCreateTopic()
@@ -105,8 +90,8 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
         {
             try
             {
-                _topics = await DataSource.GetTopicListAsync();
-                _subscriptions = await DataSource.GetSubscriptionListAsync();
+                _topics = await DataManager.PubSub.GetTopicListAsync();
+                _subscriptions = await DataManager.PubSub.GetSubscriptionListAsync();
 
                 PresentTopicViewModels();
             }

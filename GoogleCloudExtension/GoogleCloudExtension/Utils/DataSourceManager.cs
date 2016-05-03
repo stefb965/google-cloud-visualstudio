@@ -32,7 +32,7 @@ namespace GoogleCloudExtension.Utils
         private void InitializeDateSources()
         {
             _pubSubDataSource = new Lazy<PubSubDataSource>(CreatePubSubDataSource);
-            _gceDataSource = new Lazy<GceDataSource(CreateGceDataSource);
+            _gceDataSource = new Lazy<GceDataSource>(CreateGceDataSource);
             _gcsDataSource = new Lazy<GcsDataSource>(CreateGcsDataSource);
             _gPlusDataSource = new Lazy<GPlusDataSource>(CreateGPlusDataSource);
         }

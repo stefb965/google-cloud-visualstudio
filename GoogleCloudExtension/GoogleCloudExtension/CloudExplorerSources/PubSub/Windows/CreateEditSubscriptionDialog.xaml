@@ -9,14 +9,14 @@
              xmlns:c="clr-namespace:GoogleCloudExtension.Controls"
              WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
              mc:Ignorable="d" Width="550" Height="440"
+             d:DesignWidth="550" d:DesignHeight="440"
              d:DataContext="{d:DesignInstance {x:Type local:CreateEditSubscriptionViewModel}}"
              FocusManager.FocusedElement="{Binding ElementName=SubscriptionName}"
-             d:DesignWidth="550" d:DesignHeight="440"
              Title="{Binding DialogTitle}">
     <ui:DialogWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styles.xaml"/>
+                <ResourceDictionary Source="/GoogleCloudExtension;component/Controls/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <Style TargetType="c:HintedLabel">
                 <Setter Property="Margin" Value="0,10,0,6"/>

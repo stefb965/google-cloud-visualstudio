@@ -9,14 +9,14 @@
              xmlns:c="clr-namespace:GoogleCloudExtension.Controls"
              WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
              mc:Ignorable="d" Width="550" Height="210"
+             d:DesignWidth="550" d:DesignHeight="210"
              d:DataContext="{d:DesignInstance {x:Type local:CreateTopicViewModel}}"
              FocusManager.FocusedElement="{Binding ElementName=TopicName}"
-             d:DesignWidth="550" d:DesignHeight="210"
              Title="Create a topic">
     <ui:DialogWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styles.xaml"/>
+                <ResourceDictionary Source="/GoogleCloudExtension;component/Controls/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <Style TargetType="c:HintedLabel">
                 <Setter Property="Margin" Value="0,10,0,6"/>

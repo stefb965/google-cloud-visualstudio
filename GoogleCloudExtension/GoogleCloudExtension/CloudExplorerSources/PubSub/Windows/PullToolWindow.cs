@@ -19,7 +19,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
     /// </para>
     /// </remarks>
     [Guid("ED49E8F3-4747-4E42-9CED-347190FE7498")]
-    public class PullToolWindow : ToolWindowPane
+    internal class PullToolWindow : ToolWindowPane
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PullToolWindow"/> class.

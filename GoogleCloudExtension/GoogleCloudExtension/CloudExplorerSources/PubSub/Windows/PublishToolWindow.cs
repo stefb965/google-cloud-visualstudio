@@ -19,7 +19,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
     /// </para>
     /// </remarks>
     [Guid("E79562CF-9E21-425C-B8D6-D6B89218FA25")]
-    public class PublishToolWindow : ToolWindowPane
+    internal class PublishToolWindow : ToolWindowPane
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PublishToolWindow"/> class.
