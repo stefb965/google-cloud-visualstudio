@@ -5,6 +5,40 @@ xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.Visua
     <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{DynamicResource {x:Static ui:EnvironmentColors.ToolWindowContentGridColorKey}}"/>
     <SolidColorBrush x:Key="ContentBackgroundBrush" Color="{DynamicResource {x:Static ui:EnvironmentColors.ToolWindowBackgroundColorKey}}"/>
 
+    <ControlTemplate x:Key="TextBoxErrorTemplate">
+        <StackPanel Orientation="Horizontal">
+            <Border BorderThickness="1" BorderBrush="#FFdc000c" CornerRadius="0.7"
+                VerticalAlignment="Top"
+                    DataContext="{Binding ElementName=AdornedPlaceholder}">
+                <Border.ToolTip>
+                    <ToolTip Background="#FFdc000c" BorderBrush="#FFdc000c"
+                             MaxWidth="400" MinHeight="40">
+                        <ItemsControl ItemsSource="{Binding Path=AdornedElement.(Validation.Errors)}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ErrorContent}"
+                                               Foreground="White" Margin="8,3,8,3" 
+                                               TextWrapping="Wrap"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ToolTip>
+                </Border.ToolTip>
+                <Grid>
+                    <Polygon Points="0,0 10,0, 10,10" 
+                             Stroke="#FFdc000c" Fill="#FFdc000c" 
+                             x:Name="ErrorCorner"
+                             VerticalAlignment="Top"
+                             HorizontalAlignment="Right"
+                             IsHitTestVisible="True"
+                             Grid.ZIndex="10"/>
+                    <AdornedElementPlaceholder x:Name="AdornedPlaceholder"
+                                               Margin="1,1,1,2"/>
+                </Grid>
+            </Border>
+        </StackPanel>
+    </ControlTemplate>
+
     <Style BasedOn="{StaticResource {x:Static shell:VsResourceKeys.ButtonStyleKey}}" TargetType="Button"/>
     <Style BasedOn="{StaticResource {x:Static shell:VsResourceKeys.CheckBoxStyleKey}}" TargetType="CheckBox"/>
     <Style BasedOn="{StaticResource {x:Static shell:VsResourceKeys.ComboBoxStyleKey}}" TargetType="ComboBox" />
@@ -28,7 +62,7 @@ xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.Visua
         <Setter Property="Foreground" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxTextBrushKey}}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBorderBrushKey}}"/>
         <Setter Property="Background" Value="{DynamicResource {x:Static ui:CommonControlsColors.TextBoxBackgroundBrushKey}}"/>
-
+        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource TextBoxErrorTemplate}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate>
@@ -51,6 +85,11 @@ xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.Visua
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Style.Triggers>
+            <Trigger Property="Validation.HasError" Value="True">
+                <Setter Property="BorderBrush" Value="Transparent"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <Style TargetType="RadioButton">
