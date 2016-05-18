@@ -1,7 +1,6 @@
 ﻿// Copyright 2016 Google Inc. All Rights Reserved.
 // Licensed under the Apache License Version 2.0.
 
-using GoogleCloudExtension.CloudExplorer;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 {
@@ -9,11 +8,11 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
     {
         private readonly CreateTopicViewModel _viewModel;
 
-        public CreateTopicDialog(ICloudExplorerSource owner)
+        public CreateTopicDialog(PubSubSourceRootViewModel root)
         {
             InitializeComponent();
 
-            _viewModel = new CreateTopicViewModel(owner, this);
+            _viewModel = new CreateTopicViewModel(root, this);
             DataContext = _viewModel;
         }
     }

@@ -3,7 +3,6 @@
 
 using System;
 using GoogleCloudExtension.Accounts;
-using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.DataSources;
 
 namespace GoogleCloudExtension.Utils
@@ -18,17 +17,13 @@ namespace GoogleCloudExtension.Utils
         private Lazy<GcsDataSource> _gcsDataSource;
         private Lazy<GPlusDataSource> _gPlusDataSource;
 
-        public ICloudExplorerSource Owner { get; }
-
         public PubSubDataSource PubSub => _pubSubDataSource.Value;
         public GceDataSource Gce => _gceDataSource.Value;
         public GcsDataSource Gcs => _gcsDataSource.Value;
         public GPlusDataSource GPlus => _gPlusDataSource.Value;
 
-        public DataSourceManager(ICloudExplorerSource owner)
+        public DataSourceManager()
         {
-            Owner = owner;
-
             InitializeDateSources();
         }
 
@@ -42,29 +37,29 @@ namespace GoogleCloudExtension.Utils
 
         private PubSubDataSource CreatePubSubDataSource()
         {
-            return Owner.CurrentProject != null
-                ? new PubSubDataSource(Owner.CurrentProject.ProjectId, AccountsManager.CurrentGoogleCredential)
+            return CredentialsStore.Default.CurrentProjectId != null 
+                ? new PubSubDataSource(CredentialsStore.Default.CurrentProjectId, CredentialsStore.Default.CurrentGoogleCredential)
                 : null;
         }
 
         private GceDataSource CreateGceDataSource()
         {
-            return Owner.CurrentProject != null
-                ? new GceDataSource(Owner.CurrentProject.ProjectId, AccountsManager.CurrentGoogleCredential)
+            return CredentialsStore.Default.CurrentProjectId != null
+                ? new GceDataSource(CredentialsStore.Default.CurrentProjectId, CredentialsStore.Default.CurrentGoogleCredential)
                 : null;
         }
 
         private GcsDataSource CreateGcsDataSource()
         {
-            return Owner.CurrentProject != null
-                ? new GcsDataSource(Owner.CurrentProject.ProjectId, AccountsManager.CurrentGoogleCredential)
+            return CredentialsStore.Default.CurrentProjectId != null
+                ? new GcsDataSource(CredentialsStore.Default.CurrentProjectId, CredentialsStore.Default.CurrentGoogleCredential)
                 : null;
         }
 
         private GPlusDataSource CreateGPlusDataSource()
         {
-            return Owner.CurrentProject != null
-                ? new GPlusDataSource(AccountsManager.CurrentGoogleCredential)
+            return CredentialsStore.Default.CurrentProjectId != null
+                ? new GPlusDataSource(CredentialsStore.Default.CurrentGoogleCredential)
                 : null;
         }
     }

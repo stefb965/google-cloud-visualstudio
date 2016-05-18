@@ -6,9 +6,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Google;
 using Google.Apis.Pubsub.v1.Data;
-using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.Utils;
 using Microsoft.VisualStudio.PlatformUI;
+using GoogleCloudExtension.Accounts;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 {
@@ -23,8 +23,8 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         private const string AcknowledgmentDeadlineHint = "How long Pub/Sub waits for the subscriber to acknowledge receipt before resending the message";
         private const string AcknowledgmentDeadlineValueErrorMessage = "Acknowledgment Deadline must be between 0 and 600 seconds";
 
-        private readonly ICloudExplorerSource _owner;
         private readonly DataSourceManager _dataManager;
+        private readonly PubSubSourceRootViewModel _root;
         private readonly DialogWindow _window;
         private readonly Subscription _subscription;
 
@@ -39,7 +39,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         public string DeliveryTypeHintText => DeliveryTypeHint;
         public string PushEndpointUrlHintText => PushEndpointUrlHint;
         public string AcknowledgmentDeadlineHintText => AcknowledgmentDeadlineHint;
-        public string SubscriptionNamePrefix => $"projects/{_owner?.CurrentProject?.ProjectId}/subscriptions/";
+        public string SubscriptionNamePrefix => $"projects/{CredentialsStore.Default?.CurrentProjectId}/subscriptions/";
         public Topic Topic { get; }
 
         public WeakCommand CreateTopicCommand { get; }
@@ -124,17 +124,17 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             }
         }
 
-        public CreateEditSubscriptionViewModel(ICloudExplorerSource owner, DialogWindow window,
+        public CreateEditSubscriptionViewModel(PubSubSourceRootViewModel root, DialogWindow window,
             Topic topic, Subscription subscription)
         {
-            _owner = owner;
+            _root = root;
             _window = window;
             _subscription = subscription;
             Topic = topic;
 
             InitSubscription();
 
-            _dataManager = new DataSourceManager(owner);
+            _dataManager = new DataSourceManager();
             CreateTopicCommand = new WeakCommand(OnCreateTopic);
             ValidationFinished += (sender, e) => CreateTopicCommand.CanExecuteCommand = IsValid;
         }
@@ -180,7 +180,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
                     GcpOutputWindow.OutputLine($"Subscription \"{subscriptionFullName}\" has been created");
 
                     _window.Close();
-                    _owner.Refresh();
+                    _root.Refresh();
                 }
                 else
                 {
@@ -194,7 +194,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
                         GcpOutputWindow.OutputLine($"Modifying push config for subscription \"{subscriptionFullName}\"");
                         await _dataManager.PubSub.ModifyPushConfig(subscriptionFullName, !IsPull ? PushEndpointUrl : null);
                         GcpOutputWindow.OutputLine("Push config been modified");
-                        _owner.Refresh();
+                        _root.Refresh();
                     }
 
                     _window.Close();

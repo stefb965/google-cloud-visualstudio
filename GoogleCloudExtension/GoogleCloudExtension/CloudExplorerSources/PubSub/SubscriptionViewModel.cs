@@ -14,15 +14,16 @@ using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Windows;
 using GoogleCloudExtension.Utils;
 using Microsoft.VisualStudio.Shell.Interop;
+using GoogleCloudExtension.Accounts;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 {
     internal class SubscriptionViewModel : TreeHierarchy, ICloudExplorerItemSource
     {
         private const string IconResourcePath = "CloudExplorerSources/PubSub/Resources/item_icon.png";
-        private static readonly Lazy<ImageSource> s_subscriptionIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconResourcePath));
+        private static readonly Lazy<ImageSource> s_subscriptionIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadImage(IconResourcePath));
 
-        private readonly PubSubSourceRootViewModel _owner;
+        private readonly PubSubSourceRootViewModel _root;
         private readonly Topic _topic;
         private readonly Subscription _subscription;
         private readonly Lazy<SubscriptionItem> _item;
@@ -32,14 +33,14 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         public event EventHandler ItemChanged;
 
-        public SubscriptionViewModel(PubSubSourceRootViewModel owner, Topic topic, Subscription subscription)
+        public SubscriptionViewModel(PubSubSourceRootViewModel root, Topic topic, Subscription subscription)
         {
-            _owner = owner;
+            _root = root;
             _topic = topic;
             _subscription = subscription;
             _item = new Lazy<SubscriptionItem>(() => new SubscriptionItem(subscription));
 
-            Content = _item.Value.Name;
+            Caption = _item.Value.Name;
             Icon = s_subscriptionIcon.Value;
 
             var menuItems = new List<FrameworkElement>
@@ -56,7 +57,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnEditSubscription()
         {
-            var dlg = new CreateEditSubscriptionDialog(_owner.Owner, _topic, _subscription);
+            var dlg = new CreateEditSubscriptionDialog(_root, _topic, _subscription);
             dlg.ShowModal();
         }
 
@@ -77,7 +78,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnBrowseSubscription()
         {
-            var url = $"https://console.cloud.google.com/cloudpubsub/subscriptions/{_item.Value.Name}?edit=false&project={_owner.Owner.CurrentProject.ProjectId}";
+            var url = $"https://console.cloud.google.com/cloudpubsub/subscriptions/{_item.Value.Name}?edit=false&project={CredentialsStore.Default?.CurrentProjectId}";
             Debug.WriteLine($"Starting subscription browsing at: {url}");
             Process.Start(url);
         }
@@ -91,10 +92,10 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             {
                 GcpOutputWindow.Activate();
                 GcpOutputWindow.OutputLine($"Deleting subscription \"{_item.Value.FullName}\"");
-                await _owner.DataManager.PubSub.DeleteSubscriptionAsync(_item.Value.FullName);
+                await _root.DataManager.PubSub.DeleteSubscriptionAsync(_item.Value.FullName);
                 GcpOutputWindow.OutputLine($"Subscription \"{_item.Value.FullName}\" has been deleted");
 
-                _owner.Owner.Refresh();
+                _root.Refresh();
             }
             catch (GoogleApiException ex)
             {

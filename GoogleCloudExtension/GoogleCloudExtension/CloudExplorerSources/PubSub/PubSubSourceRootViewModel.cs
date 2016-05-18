@@ -14,26 +14,27 @@ using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Windows;
 using GoogleCloudExtension.DataSources;
 using GoogleCloudExtension.Utils;
+using GoogleCloudExtension.Accounts;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 {
-    internal class PubSubSourceRootViewModel : SourceRootViewModelBase
+    public class PubSubSourceRootViewModel : SourceRootViewModelBase
     {
         private const string IconResourcePath = "CloudExplorerSources/PubSub/Resources/pubsub.png";
-        private static readonly Lazy<ImageSource> s_pubSubIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconResourcePath));
+        private static readonly Lazy<ImageSource> s_pubSubIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadImage(IconResourcePath));
 
         private static readonly TreeLeaf s_loadingPlaceholder = new TreeLeaf
         {
-            Content = "Loading topics...",
+            Caption = "Loading topics...",
             IsLoading = true
         };
         private static readonly TreeLeaf s_noItemsPlacehoder = new TreeLeaf
         {
-            Content = "No topics found."
+            Caption = "No topics found."
         };
         private static readonly TreeLeaf s_errorPlaceholder = new TreeLeaf
         {
-            Content = "Failed to list topics.",
+            Caption = "Failed to list topics.",
             IsError = true
         };
 
@@ -52,11 +53,11 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         public override TreeLeaf NoItemsPlaceholder => s_noItemsPlacehoder;
 
-        public override void Initialize(ICloudExplorerSource owner)
+        public override void Initialize()
         {
-            base.Initialize(owner);
+            base.Initialize();
 
-            InvalidateCredentials();
+            InvalidateProjectOrAccount(); 
 
             var menuItems = new List<FrameworkElement>
             {
@@ -67,21 +68,21 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
             ContextMenu = new ContextMenu { ItemsSource = menuItems };
         }
 
-        public override void InvalidateCredentials()
+        public override void InvalidateProjectOrAccount()
         {
             Debug.WriteLine("New credentials, invalidating the PubSub source.");
-            DataManager = new DataSourceManager(Owner);
+            DataManager = new DataSourceManager();
         }
 
         private void OnCreateTopic()
         {
-            var dlg = new CreateTopicDialog(Owner);
+            var dlg = new CreateTopicDialog(this);
             dlg.ShowModal();
         }
 
         private void OnBrowseTopics()
         {
-            var url = $"https://console.cloud.google.com/cloudpubsub/topicList?project={Owner.CurrentProject.ProjectId}";
+            var url = $"https://console.cloud.google.com/cloudpubsub/topicList?project={CredentialsStore.Default?.CurrentProjectId}";
             Debug.WriteLine($"Starting topics browsing at: {url}");
             Process.Start(url);
         }

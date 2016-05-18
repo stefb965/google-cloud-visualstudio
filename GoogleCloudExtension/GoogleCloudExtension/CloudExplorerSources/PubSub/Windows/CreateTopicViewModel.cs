@@ -8,6 +8,7 @@ using Google;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.Utils;
 using Microsoft.VisualStudio.PlatformUI;
+using GoogleCloudExtension.Accounts;
 
 namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 {
@@ -19,13 +20,13 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         private const string TopicHint = "Must be 3-255 characters, start with an alphanumeric character, and contain only the following characters: letters, numbers, dashes (-), periods (.), underscores (_), tildes (~), percents (%) or plus signs (+). Cannot start with goog.";
 
         private string _topicName = string.Empty;
-        private readonly ICloudExplorerSource _owner;
         private readonly DataSourceManager _dataManager;
+        private readonly PubSubSourceRootViewModel _root;
         private readonly DialogWindow _window;
 
         public string TopicHintText => TopicHint;
 
-        public string TopicNamePrefix => $"projects/{_owner?.CurrentProject?.ProjectId}/topics/";
+        public string TopicNamePrefix => $"projects/{CredentialsStore.Default?.CurrentProjectId}/topics/";
 
         public WeakCommand CreateTopicCommand { get; }
 
@@ -44,12 +45,12 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             }
         }
 
-        public CreateTopicViewModel(ICloudExplorerSource owner, DialogWindow window)
+        public CreateTopicViewModel(PubSubSourceRootViewModel root, DialogWindow window)
         {
-            _owner = owner;
+            _root = root;
             _window = window;
 
-            _dataManager = new DataSourceManager(owner);
+            _dataManager = new DataSourceManager();
 
             CreateTopicCommand = new WeakCommand(OnCreateTopic);
             ValidationFinished += (sender, e) => CreateTopicCommand.CanExecuteCommand = IsValid;
@@ -74,7 +75,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
                 GcpOutputWindow.OutputLine($"Topic \"{topicFullName}\" has been created");
 
                 _window.Close();
-                _owner.Refresh();
+                _root.Refresh();
             }
             catch (GoogleApiException ex)
             {

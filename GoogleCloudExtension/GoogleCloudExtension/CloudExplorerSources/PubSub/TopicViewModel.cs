@@ -19,9 +19,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
     internal class TopicViewModel : TreeHierarchy, ICloudExplorerItemSource
     {
         private const string IconResourcePath = "CloudExplorerSources/PubSub/Resources/item_icon.png";
-        private static readonly Lazy<ImageSource> s_topicIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconResourcePath));
+        private static readonly Lazy<ImageSource> s_topicIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadImage(IconResourcePath));
 
-        private readonly PubSubSourceRootViewModel _owner;
+        private readonly PubSubSourceRootViewModel _root;
         private readonly Topic _topic;
         private readonly Lazy<TopicItem> _item;
         private readonly List<SubscriptionViewModel> _subscriptions;
@@ -31,16 +31,16 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         public event EventHandler ItemChanged;
 
-        public TopicViewModel(PubSubSourceRootViewModel owner, Topic topic, IEnumerable<Subscription> subscriptions)
+        public TopicViewModel(PubSubSourceRootViewModel root, Topic topic, IEnumerable<Subscription> subscriptions)
         {
-            _owner = owner;
+            _root = root;
             _topic = topic;
             _item = new Lazy<TopicItem>(() => new TopicItem(topic));
 
-            Content = _item.Value.Name;
+            Caption = _item.Value.Name;
             Icon = s_topicIcon.Value;
 
-            _subscriptions = subscriptions.Select(x => new SubscriptionViewModel(owner, topic, x)).ToList();
+            _subscriptions = subscriptions.Select(x => new SubscriptionViewModel(_root, topic, x)).ToList();
 
             foreach (var viewModel in _subscriptions)
             {
@@ -60,7 +60,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
 
         private void OnNewSubscription()
         {
-            var dlg = new CreateEditSubscriptionDialog(_owner.Owner, _topic, null);
+            var dlg = new CreateEditSubscriptionDialog(_root, _topic, null);
             dlg.ShowModal();
         }
 
@@ -91,16 +91,16 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub
                 foreach (var subscription in _subscriptions)
                 {
                     GcpOutputWindow.OutputLine($"Deleting subscription \"{subscription.SubscriptionItem.FullName}\"");
-                    await _owner.DataManager.PubSub.DeleteSubscriptionAsync(subscription.SubscriptionItem.FullName);
+                    await _root.DataManager.PubSub.DeleteSubscriptionAsync(subscription.SubscriptionItem.FullName);
                     GcpOutputWindow.OutputLine(
                         $"Subscription \"{subscription.SubscriptionItem.FullName}\" has been deleted");
                 }
 
                 GcpOutputWindow.OutputLine($"Deleting topic \"{_item.Value.FullName}\"");
-                await _owner.DataManager.PubSub.DeleteTopicAsync(_item.Value.FullName);
+                await _root.DataManager.PubSub.DeleteTopicAsync(_item.Value.FullName);
                 GcpOutputWindow.OutputLine($"Topic \"{_item.Value.FullName}\" has been deleted");
 
-                _owner.Owner.Refresh();
+                _root.Refresh();
             }
             catch (GoogleApiException ex)
             {

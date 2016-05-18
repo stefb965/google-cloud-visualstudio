@@ -20,8 +20,7 @@ namespace GoogleCloudExtension.DataSources
         /// </summary>
         /// <param name="projectId"></param>
         /// <param name="credential"></param>
-        public PubSubDataSource(string projectId, GoogleCredential credential)
-            : base(projectId, () => CreateService(credential))
+        public PubSubDataSource(string projectId, GoogleCredential credential) : base(projectId, CreateService(credential))
         { }
 
         private static PubsubService CreateService(GoogleCredential credential)
