@@ -9,7 +9,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 
 namespace GoogleCloudExtension.Utils
 {
@@ -18,15 +17,26 @@ namespace GoogleCloudExtension.Utils
     /// </summary>
     public partial class ViewModelBase : INotifyDataErrorInfo
     {
-        private readonly object _lockObj = new object();
         private readonly ConcurrentDictionary<string, List<string>> _errors =
             new ConcurrentDictionary<string, List<string>>();
-
         public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+        public event EventHandler<EventArgs> ValidationFinished;
+
+        protected bool ValidateOnChanges { get; set; }
+
+        public bool HasErrors => _errors.Any(x => x.Value != null && x.Value.Any());
 
         public bool IsValid => !HasErrors;
 
-        public bool HasErrors => _errors.Any(x => x.Value != null && x.Value.Any());
+        protected override void SetValueAndRaise<T>(ref T storage, T value, [CallerMemberName] string propertyName = "")
+        {
+            base.SetValueAndRaise(ref storage, value, propertyName);
+
+            if (ValidateOnChanges)
+            {
+                ValidateProperty(value, propertyName);
+            }
+        }
 
         public IEnumerable GetErrors(string propertyName)
         {
@@ -40,67 +50,42 @@ namespace GoogleCloudExtension.Utils
             return _errors.SelectMany(error => error.Value);
         }
 
-        protected void RaiseErrorsChanged(string propertyName)
+        protected void ValidateProperty<T>(T value, [CallerMemberName] string propertyName = null)
         {
-            ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
-        }
-
-        protected virtual void OnValidationFinished(bool hasErrors) { }
-
-        public Task ValidateAsync()
-        {
-            return Task.Run(() => Validate());
-        }
-
-        public Task ValidatePropertyAsync<T>(T value, [CallerMemberName] string propertyName = null)
-        {
-            return Task.Run(() => ValidateProperty(value, propertyName));
-        }
-
-        private void ValidateProperty<T>(T value, string propertyName)
-        {
-            lock (_lockObj)
+            var validationContext = new ValidationContext(this, null, null)
             {
-                var validationContext = new ValidationContext(this, null, null)
-                {
-                    MemberName = propertyName
-                };
+                MemberName = propertyName
+            };
 
-                var validationResults = new List<ValidationResult>();
-                Validator.TryValidateProperty(value, validationContext, validationResults);
+            var validationResults = new List<ValidationResult>();
+            Validator.TryValidateProperty(value, validationContext, validationResults);
 
-                List<string> outputList;
-                _errors.TryRemove(propertyName, out outputList);
-                RaiseErrorsChanged(propertyName);
+            List<string> outputList;
+            _errors.TryRemove(propertyName, out outputList);
+            RaiseErrorsChanged(propertyName);
 
-                HandleValidationResults(validationResults);
-                OnValidationFinished(HasErrors);
-            }
+            HandleValidationResults(validationResults);
+            RaiseValidationFinished();
         }
 
-        private void Validate()
+        protected void Validate()
         {
-            lock (_lockObj)
-            {
-                var validationContext = new ValidationContext(this, null, null);
-                var validationResults = new List<ValidationResult>();
-                Validator.TryValidateObject(this, validationContext, validationResults, true);
+            var validationContext = new ValidationContext(this, null, null);
+            var validationResults = new List<ValidationResult>();
+            Validator.TryValidateObject(this, validationContext, validationResults, true);
 
-                var errors = _errors.ToList();
-                foreach (var error in errors)
+            foreach (var error in _errors)
+            {
+                if (validationResults.All(res => res.MemberNames.All(name => name != error.Key)))
                 {
-                    if (validationResults.All(res => res.MemberNames.All(name => name != error.Key)))
-                    {
-                        List<string> outputList;
-                        _errors.TryRemove(error.Key, out outputList);
-                        RaiseErrorsChanged(error.Key);
-                    }
+                    List<string> outputList;
+                    _errors.TryRemove(error.Key, out outputList);
+                    RaiseErrorsChanged(error.Key);
                 }
-
-                HandleValidationResults(validationResults);
             }
 
-            OnValidationFinished(HasErrors);
+            HandleValidationResults(validationResults);
+            RaiseValidationFinished();
         }
 
         private void HandleValidationResults(IEnumerable<ValidationResult> validationResults)
@@ -123,6 +108,19 @@ namespace GoogleCloudExtension.Utils
                 _errors.TryAdd(group.Key, messages);
                 RaiseErrorsChanged(group.Key);
             }
+
+            RaisePropertyChanged(nameof(HasErrors));
+            RaisePropertyChanged(nameof(IsValid));
+        }
+
+        protected void RaiseValidationFinished()
+        {
+            ValidationFinished?.Invoke(this, new EventArgs());
+        }
+
+        protected void RaiseErrorsChanged(string propertyName)
+        {
+            ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
         }
     }
 }

@@ -18,7 +18,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         private const string TopicNameLengthErrorMessage = "Name must be between 3 and 255 characters";
         private const string TopicHint = "Must be 3-255 characters, start with an alphanumeric character, and contain only the following characters: letters, numbers, dashes (-), periods (.), underscores (_), tildes (~), percents (%) or plus signs (+). Cannot start with goog.";
 
-        private bool _validateOnChange;
         private string _topicName = string.Empty;
         private readonly ICloudExplorerSource _owner;
         private readonly DataSourceManager _dataManager;
@@ -42,11 +41,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             set
             {
                 SetValueAndRaise(ref _topicName, value);
-
-                if (_validateOnChange)
-                {
-                    ValidatePropertyAsync(_topicName);
-                }
             }
         }
 
@@ -58,22 +52,14 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             _dataManager = new DataSourceManager(owner);
 
             CreateTopicCommand = new WeakCommand(OnCreateTopic);
-        }
-
-        protected override void OnValidationFinished(bool hasErrors)
-        {
-            base.OnValidationFinished(hasErrors);
-
-            _window.Dispatcher.Invoke(() =>
-            {
-                CreateTopicCommand.CanExecuteCommand = !hasErrors;
-            });
+            ValidationFinished += (sender, e) => CreateTopicCommand.CanExecuteCommand = IsValid;
         }
 
         private async void OnCreateTopic()
         {
-            _validateOnChange = true;
-            await ValidateAsync();
+            ValidateOnChanges = true;
+            Validate();
+
             if (HasErrors) return;
 
             IsLoading = true;

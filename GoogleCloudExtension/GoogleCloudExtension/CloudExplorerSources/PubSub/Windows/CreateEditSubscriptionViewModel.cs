@@ -28,7 +28,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
         private readonly DialogWindow _window;
         private readonly Subscription _subscription;
 
-        private bool _validateOnChange;
         private string _dialogTitle;
         private string _okButtonText;
         private string _subscriptionName = string.Empty;
@@ -84,11 +83,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             set
             {
                 SetValueAndRaise(ref _subscriptionName, value);
-
-                if (_validateOnChange)
-                {
-                    ValidatePropertyAsync(_subscriptionName);
-                }
             }
         }
 
@@ -101,11 +95,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             set
             {
                 SetValueAndRaise(ref _pushEndpointUrl, value);
-
-                if (_validateOnChange)
-                {
-                    ValidatePropertyAsync(_pushEndpointUrl);
-                }
             }
         }
 
@@ -119,11 +108,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             set
             {
                 SetValueAndRaise(ref _isPull, value);
-
-                if (_validateOnChange)
-                {
-                    ValidatePropertyAsync(_isPull);
-                }
             }
         }
 
@@ -137,11 +121,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             set
             {
                 SetValueAndRaise(ref _ackDeadlineSeconds, value);
-
-                if (_validateOnChange)
-                {
-                    ValidatePropertyAsync(_ackDeadlineSeconds);
-                }
             }
         }
 
@@ -157,6 +136,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
 
             _dataManager = new DataSourceManager(owner);
             CreateTopicCommand = new WeakCommand(OnCreateTopic);
+            ValidationFinished += (sender, e) => CreateTopicCommand.CanExecuteCommand = IsValid;
         }
 
         private void InitSubscription()
@@ -178,20 +158,11 @@ namespace GoogleCloudExtension.CloudExplorerSources.PubSub.Windows
             }
         }
 
-        protected override void OnValidationFinished(bool hasErrors)
-        {
-            base.OnValidationFinished(hasErrors);
-
-            _window.Dispatcher.Invoke(() =>
-            {
-                CreateTopicCommand.CanExecuteCommand = !hasErrors;
-            });
-        }
-
         private async void OnCreateTopic()
         {
-            _validateOnChange = true;
-            await ValidateAsync();
+            ValidateOnChanges = true;
+            Validate();
+
             if (HasErrors) return;
 
             IsLoading = true;
