@@ -1,7 +1,20 @@
-﻿// Copyright 2015 Google Inc. All Rights Reserved.
-// Licensed under the Apache License Version 2.0.
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 using Google.Apis.Storage.v1.Data;
+using GoogleCloudExtension.Accounts;
+using GoogleCloudExtension.Analytics;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.Utils;
 using System;
@@ -15,7 +28,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gcs
     internal class BucketViewModel : TreeHierarchy, ICloudExplorerItemSource
     {
         private const string IconResourcePath = "CloudExplorerSources/Gcs/Resources/bucket_icon.png";
-        private static readonly Lazy<ImageSource> s_bucketIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconResourcePath));
+        private static readonly Lazy<ImageSource> s_bucketIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadImage(IconResourcePath));
 
         private readonly GcsSourceRootViewModel _owner;
         private readonly Bucket _bucket;
@@ -39,7 +52,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gcs
             _item = new Lazy<BucketItem>(GetItem);
             _openBucketCommand = new WeakCommand(OnOpenBucket);
 
-            Content = _bucket.Name;
+            Caption = _bucket.Name;
             Icon = s_bucketIcon.Value;
 
             var menuItems = new List<MenuItem>
@@ -51,7 +64,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gcs
 
         private async void OnOpenBucket()
         {
-            var url = $"https://pantheon.corp.google.com/storage/browser/{_bucket.Name}/?project={_owner.Owner.CurrentProject.ProjectId}";
+            ExtensionAnalytics.ReportCommand(CommandName.OpenWebsiteForGcsBucket, CommandInvocationSource.Button);
+
+            var url = $"https://console.cloud.google.com/storage/browser/{_bucket.Name}/?project={CredentialsStore.Default.CurrentProjectId}";
             Debug.WriteLine($"Starting bucket browsing at: {url}");
             Process.Start(url);
         }

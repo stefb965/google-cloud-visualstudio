@@ -1,6 +1,18 @@
-﻿using System.Diagnostics;
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System.Windows.Controls;
-using System.Windows.Navigation;
 
 namespace GoogleCloudExtension.OauthLoginFlow
 {
@@ -9,48 +21,9 @@ namespace GoogleCloudExtension.OauthLoginFlow
     /// </summary>
     public partial class OauthLoginFlowWindowContent : UserControl
     {
-        private const string SuccessCodePrefix = "Success code=";
-
-        private readonly OAuthLoginFlowWindow _owner;
-
-        private OAuthLoginFlowViewModel ViewModel => (OAuthLoginFlowViewModel)DataContext;
-
-        public OauthLoginFlowWindowContent(OAuthLoginFlowWindow owner)
+        public OauthLoginFlowWindowContent()
         {
             InitializeComponent();
-
-            _owner = owner;
         }
-
-        public void Navigate(string url)
-        {
-            _webBrowser.Navigate(url);
-        }
-
-        private void WebBrowser_Navigating(object sender, NavigatingCancelEventArgs e)
-        {
-            ViewModel.Message = "Navigating...";
-        }
-
-        private void WebBrowser_Navigated(object sender, NavigationEventArgs e)
-        {
-            var self = (WebBrowser)sender;
-            dynamic doc = self.Document;
-            var title = (string)doc.title;
-            ViewModel.Message = $"Navigated, title: {title}";
-
-            Debug.WriteLine($"Navigated, Title: {title}");
-
-            if (IsSuccessCode(title))
-            {
-                Debug.Write($"Found access code: {GetAccessCode(title)}");
-                ViewModel.AccessCode = GetAccessCode(title);
-                _owner.Close();
-            }
-        }
-
-        private string GetAccessCode(string title) => title.Substring(SuccessCodePrefix.Length);
-
-        private bool IsSuccessCode(string title) => title.StartsWith(SuccessCodePrefix);
     }
 }

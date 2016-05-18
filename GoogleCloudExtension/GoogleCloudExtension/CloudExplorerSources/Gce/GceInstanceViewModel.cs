@@ -1,8 +1,20 @@
-﻿// Copyright 2015 Google Inc. All Rights Reserved.
-// Licensed under the Apache License Version 2.0.
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 using Google.Apis.Compute.v1.Data;
 using GoogleCloudExtension.Accounts;
+using GoogleCloudExtension.Analytics;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.DataSources;
 using GoogleCloudExtension.OAuth;
@@ -26,9 +38,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
         private const string IconStopedResourcePath = "CloudExplorerSources/Gce/Resources/instance_icon_stoped.png";
         private const string IconTransitionResourcePath = "CloudExplorerSources/Gce/Resources/instance_icon_transition.png";
 
-        private static readonly Lazy<ImageSource> s_instanceRunningIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconRunningResourcePath));
-        private static readonly Lazy<ImageSource> s_instanceStopedIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconStopedResourcePath));
-        private static readonly Lazy<ImageSource> s_instanceTransitionIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconTransitionResourcePath));
+        private static readonly Lazy<ImageSource> s_instanceRunningIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadImage(IconRunningResourcePath));
+        private static readonly Lazy<ImageSource> s_instanceStopedIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadImage(IconStopedResourcePath));
+        private static readonly Lazy<ImageSource> s_instanceTransitionIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadImage(IconTransitionResourcePath));
 
         private readonly GceSourceRootViewModel _owner;
         private Instance _instance;
@@ -91,15 +103,11 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
                 switch (pendingOperation.OperationType)
                 {
                     case OperationType.StartInstance:
-                        Content = $"Starting instance {Instance.Name}";
+                        Caption = $"Starting instance {Instance.Name}";
                         break;
 
                     case OperationType.StopInstance:
-                        Content = $"Stoping instance {Instance.Name}";
-                        break;
-
-                    case OperationType.StoreMetadata:
-                        Content = $"Storing metadata {Instance.Name}";
+                        Caption = $"Stoping instance {Instance.Name}";
                         break;
                 }
 
@@ -129,9 +137,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
                     // Refresh the instance state after the operation is finished.
                     Instance = await _owner.DataSource.RefreshInstance(Instance);
                 }
-                catch (ZoneOperationException ex)
+                catch (DataSourceException ex)
                 {
-                    Content = Instance.Name;
+                    Caption = Instance.Name;
                     IsLoading = false;
                     IsError = true;
                     UpdateContextMenu();
@@ -145,10 +153,6 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
 
                         case OperationType.StopInstance:
                             GcpOutputWindow.OutputLine($"Stop instance operation for {Instance.Name} failed. {ex.Message}");
-                            break;
-
-                        case OperationType.StoreMetadata:
-                            GcpOutputWindow.OutputLine($"Store metadata operation for {Instance.Name} failed. {ex.Message}");
                             break;
                     }
 
@@ -167,7 +171,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
 
             // Normal state, no pending operations.
             IsLoading = false;
-            Content = Instance.Name;
+            Caption = Instance.Name;
             UpdateContextMenu();
         }
 
@@ -238,7 +242,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
         {
             Debug.WriteLine($"Failed to fetch oauth credentials: {ex.Message}");
             UserPromptUtils.OkPrompt(
-                $"Failed to fetch oauth credentials for account {AccountsManager.CurrentAccount.AccountName}, please login again.",
+                $"Failed to fetch oauth credentials for account {CredentialsStore.Default.CurrentAccount.AccountName}, please login again.",
                 "Credentials Error");
         }
 
@@ -270,11 +274,15 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
 
         private void OnOpenTerminalServerSessionCommand()
         {
+            ExtensionAnalytics.ReportCommand(CommandName.OpenTerminalServerSessionForGceInstanceCommand, CommandInvocationSource.Button);
+
             Process.Start("mstsc", $"/v:{Instance.GetPublicIpAddress()}");
         }
 
         private void OnOpenWebsite()
         {
+            ExtensionAnalytics.ReportCommand(CommandName.OpenWebsiteForGceInstanceCommand, CommandInvocationSource.Button);
+
             var url = Instance.GetDestinationAppUri();
             Debug.WriteLine($"Opening Web Site: {url}");
             Process.Start(url);
@@ -282,6 +290,8 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
 
         private void OnGetPublishSettings()
         {
+            ExtensionAnalytics.ReportCommand(CommandName.GetPublishSettingsForGceInstance, CommandInvocationSource.Button);
+
             Debug.WriteLine($"Generating Publishing settings for {Instance.Name}");
 
             var storePath = PromptForPublishSettingsPath(Instance.Name);

@@ -1,5 +1,16 @@
-﻿// Copyright 2015 Google Inc. All Rights Reserved.
-// Licensed under the Apache License Version 2.0.
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 using Google.Apis.Compute.v1.Data;
 using GoogleCloudExtension.Accounts;
@@ -19,22 +30,22 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
     {
         private const string IconResourcePath = "CloudExplorerSources/Gce/Resources/gce_logo.png";
 
-        private static readonly Lazy<ImageSource> s_gceIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconResourcePath));
+        private static readonly Lazy<ImageSource> s_gceIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadImage(IconResourcePath));
         private static readonly TreeLeaf s_loadingPlaceholder = new TreeLeaf
         {
-            Content = "Loading instances...",
+            Caption = "Loading instances...",
             IsLoading = true
         };
         private static readonly TreeLeaf s_errorPlaceholder = new TreeLeaf
         {
-            Content = "Failed to load instances.",
+            Caption = "Failed to load instances.",
             IsError = true
         };
         private static readonly TreeLeaf s_noItemsPlacehoder = new TreeLeaf
         {
-            Content = "No instances found."
+            Caption = "No instances found."
         };
-        private static readonly TreeLeaf s_noZonesPlaceholder = new TreeLeaf { Content = "No zones" };
+        private static readonly TreeLeaf s_noZonesPlaceholder = new TreeLeaf { Caption = "No zones" };
 
         private bool _showOnlyWindowsInstances = false;
         private IList<Instance> _instances;
@@ -67,24 +78,24 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
             }
         }
 
-        public override void Initialize(ICloudExplorerSource owner)
+        public override void Initialize()
         {
-            base.Initialize(owner);
+            base.Initialize();
 
-            InvalidateCredentials();
+            InvalidateProjectOrAccount();
         }
 
-        public override void InvalidateCredentials()
+        public override void InvalidateProjectOrAccount()
         {
             Debug.WriteLine("New credentials, invalidating data source for GCE");
-            _dataSource = new Lazy<GceDataSource>(CreateDataSource); 
+            _dataSource = new Lazy<GceDataSource>(CreateDataSource);
         }
 
         private GceDataSource CreateDataSource()
         {
-            if (Owner.CurrentProject != null)
+            if (CredentialsStore.Default.CurrentProjectId != null)
             {
-                return new GceDataSource(Owner.CurrentProject.ProjectId, AccountsManager.CurrentGoogleCredential);
+                return new GceDataSource(CredentialsStore.Default.CurrentProjectId, CredentialsStore.Default.CurrentGoogleCredential);
             }
             else
             {
@@ -137,7 +148,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gce
         {
             return _instances?
                 .Where(x => !_showOnlyWindowsInstances || x.IsWindowsInstance())
-                .GroupBy(x => x.ZoneName())
+                .GroupBy(x => x.GetZoneName())
                 .Select(x => new ZoneViewModel(this, x.Key, x)).ToList();
         }
     }

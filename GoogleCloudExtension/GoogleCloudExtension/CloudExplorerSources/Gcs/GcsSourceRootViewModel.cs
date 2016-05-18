@@ -1,5 +1,16 @@
-﻿// Copyright 2015 Google Inc. All Rights Reserved.
-// Licensed under the Apache License Version 2.0.
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.CloudExplorer;
@@ -17,20 +28,20 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gcs
     internal class GcsSourceRootViewModel : SourceRootViewModelBase
     {
         private const string IconResourcePath = "CloudExplorerSources/Gcs/Resources/storage.png";
-        private static readonly Lazy<ImageSource> s_storageIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(IconResourcePath));
+        private static readonly Lazy<ImageSource> s_storageIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadImage(IconResourcePath));
 
         private static readonly TreeLeaf s_loadingPlaceholder = new TreeLeaf
         {
-            Content = "Loading buckets...",
+            Caption = "Loading buckets...",
             IsLoading = true
         };
         private static readonly TreeLeaf s_noItemsPlacehoder = new TreeLeaf
         {
-            Content = "No buckets found."
+            Caption = "No buckets found."
         };
         private static readonly TreeLeaf s_errorPlaceholder = new TreeLeaf
         {
-            Content = "Failed to list buckets.",
+            Caption = "Failed to list buckets.",
             IsError = true
         };
 
@@ -46,14 +57,14 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gcs
 
         public override TreeLeaf NoItemsPlaceholder => s_noItemsPlacehoder;
 
-        public override void Initialize(ICloudExplorerSource owner)
+        public override void Initialize()
         {
-            base.Initialize(owner);
+            base.Initialize();
 
-            InvalidateCredentials();
+            InvalidateProjectOrAccount();
         }
 
-        public override void InvalidateCredentials()
+        public override void InvalidateProjectOrAccount()
         {
             Debug.WriteLine("New credentials, invalidating the GCS source.");
             _dataSource = new Lazy<GcsDataSource>(CreateDataSource);
@@ -61,9 +72,9 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gcs
 
         private GcsDataSource CreateDataSource()
         {
-            if (Owner.CurrentProject != null)
+            if (CredentialsStore.Default.CurrentProjectId != null)
             {
-                return new GcsDataSource(Owner.CurrentProject.ProjectId, AccountsManager.CurrentGoogleCredential);
+                return new GcsDataSource(CredentialsStore.Default.CurrentProjectId, CredentialsStore.Default.CurrentGoogleCredential);
             }
             else
             {
@@ -106,7 +117,7 @@ namespace GoogleCloudExtension.CloudExplorerSources.Gcs
 
         private async Task<List<BucketViewModel>> LoadBucketList()
         {
-            var credential = AccountsManager.CurrentGoogleCredential;
+            var credential = CredentialsStore.Default.CurrentGoogleCredential;
             var buckets = await _dataSource.Value.GetBucketListAsync();
             return buckets?.Select(x => new BucketViewModel(this, x)).ToList();
         }

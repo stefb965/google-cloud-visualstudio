@@ -1,7 +1,19 @@
-﻿// Copyright 2015 Google Inc. All Rights Reserved.
-// Licensed under the Apache License Version 2.0.
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 using EnvDTE;
+using GoogleCloudExtension.Accounts;
 using GoogleCloudExtension.Analytics;
 using GoogleCloudExtension.CloudExplorer;
 using GoogleCloudExtension.ManageAccounts;
@@ -9,7 +21,11 @@ using GoogleCloudExtension.Utils;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using GoogleCloudExtension.CloudExplorerSources.PubSub.Windows;
 
@@ -41,6 +57,7 @@ namespace GoogleCloudExtension
     [ProvideToolWindow(typeof(PublishToolWindow), MultiInstances = true, Style = VsDockStyle.MDI)]
     [ProvideToolWindow(typeof(PullToolWindow), MultiInstances = true, Style = VsDockStyle.MDI)]
     [ProvideAutoLoad(UIContextGuids80.NoSolution)]
+    [ProvideOptionPage(typeof(AnalyticsOptionsPage), "Google Cloud Tools", "Usage Report", 0, 0, false)]
     public sealed class GoogleCloudExtensionPackage : Package
     {
         /// <summary>
@@ -48,18 +65,108 @@ namespace GoogleCloudExtension
         /// </summary>
         public const string PackageGuidString = "3784fd98-7fcc-40fc-be3b-b68334735af2";
 
-        private DTE _dteInstance;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeployToAppEngine"/> class.
+        /// Option keys for the extension options.
         /// </summary>
+        private const string CurrentGcpProjectKey = "google_current_gcp_project";
+        private const string CurrentGcpAccountKey = "google_current_gcp_credentials";
+        private const string NoneValue = "/none";
+
+        // The properties that are stored in the .suo file.
+        private static readonly Dictionary<string, Func<string>> s_propertySources = new Dictionary<string, Func<string>>
+        {
+            { CurrentGcpProjectKey, () => CredentialsStore.Default.CurrentProjectId },
+            { CurrentGcpAccountKey, () => CredentialsStore.Default.CurrentAccount?.AccountName },
+        };
+
+        private DTE _dteInstance;
+        private Dictionary<string, string> _properties;
+
         public GoogleCloudExtensionPackage()
         {
-            // Inside this method you can place any initialization code that does not require
-            // any Visual Studio service because at this point the package object is created but
-            // not sited yet inside Visual Studio environment. The place to do all the other
-            // initialization is the Initialize method.
+            // Register all of the properties.
+            foreach (var key in s_propertySources.Keys)
+            {
+                AddOptionKey(key);
+            }
         }
+
+        #region Persistence of solution options
+
+        protected override void OnLoadOptions(string key, Stream stream)
+        {
+            if (s_propertySources.Keys.Contains(key))
+            {
+                StoreLoadedProperty(key, stream);
+            }
+            else
+            {
+                base.OnLoadOptions(key, stream);
+            }
+        }
+
+        protected override void OnSaveOptions(string key, Stream stream)
+        {
+            Func<string> valueSource;
+            if (!s_propertySources.TryGetValue(key, out valueSource))
+            {
+                return;
+            }
+
+            var value = valueSource();
+            WriteOptionStream(stream, value ?? NoneValue);
+        }
+
+        private void StoreLoadedProperty(string key, Stream stream)
+        {
+            if (_properties == null)
+            {
+                _properties = new Dictionary<string, string>();
+            }
+            _properties[key] = ReadOptionStream(stream);
+
+
+            if (_properties.Count == s_propertySources.Count)
+            {
+                // All of the properties have been loaded, commit them.
+                CommitProperties();
+                _properties = null;
+            }
+        }
+
+        private void CommitProperties()
+        {
+            if (_properties[CurrentGcpAccountKey] != null)
+            {
+                Debug.WriteLine("Setting the user and project.");
+                CredentialsStore.Default.ResetCredentials(
+                    accountName: _properties[CurrentGcpAccountKey],
+                    projectId: _properties[CurrentGcpProjectKey]);
+            }
+            else
+            {
+                Debug.WriteLine("No user loaded.");
+            }
+        }
+
+        private void WriteOptionStream(Stream stream, string value)
+        {
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.WriteLine(value);
+            }
+        }
+
+        private string ReadOptionStream(Stream stream)
+        {
+            using (var reader = new StreamReader(stream))
+            {
+                var value = reader.ReadLine();
+                return value == NoneValue ? null : value;
+            }
+        }
+
+        #endregion
 
         #region Package Members
 
@@ -71,6 +178,9 @@ namespace GoogleCloudExtension
         {
             base.Initialize();
 
+            // An remember the package.
+            Instance = this;
+
             // Register the command handlers.
             CloudExplorerCommand.Initialize(this);
             ManageAccountsCommand.Initialize(this);
@@ -80,14 +190,10 @@ namespace GoogleCloudExtension
             ActivityLogUtils.LogInfo("Starting Google Cloud Tools.");
 
             // Analytics reporting.
-            ExtensionAnalytics.Initialize(this);
             ExtensionAnalytics.ReportStartSession();
 
             _dteInstance = (DTE)Package.GetGlobalService(typeof(DTE));
             _dteInstance.Events.DTEEvents.OnBeginShutdown += DTEEvents_OnBeginShutdown;
-
-            // An d remember the package.
-            Instance = this;
         }
 
         public static GoogleCloudExtensionPackage Instance { get; private set; }
@@ -100,21 +206,9 @@ namespace GoogleCloudExtension
 
         #endregion
 
-        #region Global state of the extension
+        #region User Settings
 
-        private static bool s_isDeploying;
-        public static bool IsDeploying
-        {
-            get { return s_isDeploying; }
-            set
-            {
-                if (s_isDeploying != value)
-                {
-                    s_isDeploying = value;
-                    ShellUtils.InvalidateCommandUIStatus();
-                }
-            }
-        }
+        public AnalyticsOptionsPage AnalyticsSettings => (AnalyticsOptionsPage)GetDialogPage(typeof(AnalyticsOptionsPage));
 
         #endregion
     }

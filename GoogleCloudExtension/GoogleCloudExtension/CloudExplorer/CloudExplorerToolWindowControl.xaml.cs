@@ -1,5 +1,16 @@
-﻿// Copyright 2015 Google Inc. All Rights Reserved.
-// Licensed under the Apache License Version 2.0.
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 using GoogleCloudExtension.Utils;
 using System;
@@ -14,7 +25,7 @@ namespace GoogleCloudExtension.CloudExplorer
     {
         private readonly IServiceProvider _provider;
         private bool _propertiesWindowActivated = false;
-        private readonly WeakAction<object, EventArgs> _onItemChangedHandler; 
+        private readonly WeakAction<object, EventArgs> _onItemChangedHandler;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudExplorerToolWindowControl"/> class.
@@ -34,17 +45,18 @@ namespace GoogleCloudExtension.CloudExplorer
                 oldItemSource.ItemChanged -= OnItemChanged;
             }
 
-            var itemSource = e.NewValue as ICloudExplorerItemSource;
-            if (itemSource == null)
+            var newItemSource = e.NewValue as ICloudExplorerItemSource;
+            if (newItemSource == null)
             {
                 SelectionUtils.ClearSelection(_provider);
                 return;
             }
-            itemSource.ItemChanged += OnItemChanged;
+            newItemSource.ItemChanged += OnItemChanged;
 
-            var item = itemSource.Item;
+            var item = newItemSource.Item;
             if (!_propertiesWindowActivated)
             {
+                // The properties window can only be activated once, to avoid it stealing focus continously.
                 _propertiesWindowActivated = SelectionUtils.ActivatePropertiesWindow(_provider);
             }
             SelectionUtils.SelectItem(_provider, item);

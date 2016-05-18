@@ -1,26 +1,41 @@
-﻿// Copyright 2015 Google Inc. All Rights Reserved.
-// Licensed under the Apache License Version 2.0.
+﻿// Copyright 2016 Google Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 using GoogleCloudExtension.Utils;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace GoogleCloudExtension.CloudExplorer
 {
+    /// <summary>
+    /// A node in the UI tree for the cloud explorer.
+    /// </summary>
     public class TreeNode : Model
     {
         private const string ErrorIconPath = "CloudExplorer/Resources/error_icon.png";
-        private readonly static Lazy<ImageSource> s_ErrorIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadResource(ErrorIconPath));
+        private readonly static Lazy<ImageSource> s_ErrorIcon = new Lazy<ImageSource>(() => ResourceUtils.LoadImage(ErrorIconPath));
 
-        private object _content;
+        private string _caption;
         private ContextMenu _contextMenu;
         private ImageSource _icon;
         private bool _isLoading;
         private bool _isError;
 
+        /// <summary>
+        /// The icon to use when a node is in the error state.
+        /// </summary>
         public static ImageSource ErrorIcon => s_ErrorIcon.Value;
 
         /// <summary>
@@ -49,6 +64,9 @@ namespace GoogleCloudExtension.CloudExplorer
             }
         }
 
+        /// <summary>
+        /// Whether the custom node icon is to be used or not, only in normal mode.
+        /// </summary>
         public bool IconIsVisible => !IsError && !IsLoading;
 
         /// <summary>
@@ -63,10 +81,10 @@ namespace GoogleCloudExtension.CloudExplorer
         /// <summary>
         /// The content to display for this item.
         /// </summary>
-        public object Content
+        public string Caption
         {
-            get { return _content; }
-            set { SetValueAndRaise(ref _content, value); }
+            get { return _caption; }
+            set { SetValueAndRaise(ref _caption, value); }
         }
 
         /// <summary>
@@ -77,56 +95,5 @@ namespace GoogleCloudExtension.CloudExplorer
             get { return _contextMenu; }
             set { SetValueAndRaise(ref _contextMenu, value); }
         }
-    }
-
-    public class TreeLeaf : TreeNode
-    { }
-
-    public class TreeHierarchy : TreeNode
-    {
-        private bool _isExpanded;
-
-        /// <summary>
-        /// The children for this item.
-        /// </summary>
-        public ObservableCollection<TreeNode> Children { get; } = new ObservableCollection<TreeNode>();
-
-        /// <summary>
-        /// Returns whether the hierarchy is expanded or not.
-        /// </summary>
-        public bool IsExpanded
-        {
-            get { return _isExpanded; }
-            set
-            {
-                if (value != _isExpanded)
-                {
-                    SetValueAndRaise(ref _isExpanded, value);
-                    OnIsExpandedChanged(value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Initialize the item from an <c>IEnumerable</c> source.
-        /// </summary>
-        /// <param name="children">The children of the item.</param>
-        public TreeHierarchy(IEnumerable<TreeNode> children)
-        {
-            foreach (var child in children)
-            {
-                Children.Add(child);
-            }
-        }
-
-        public TreeHierarchy()
-        { }
-
-        /// <summary>
-        /// This method will be called every time the value of IsExpanded property changes.
-        /// </summary>
-        /// <param name="newValue">The new value of the property.</param>
-        protected virtual void OnIsExpandedChanged(bool newValue)
-        { }
     }
 }
